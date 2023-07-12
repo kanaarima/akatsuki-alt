@@ -18,7 +18,7 @@ def track_clan_leaderboards(secrets):
         olddata = None
         if os.path.exists(filename):
             thread.sleeping = True
-            time.sleep(60*60)
+            time.sleep(60*5)
             continue
         if os.path.exists(f"data/clan_lb/{yesterday}.json"):
             with open(f"data/clan_lb/{yesterday}.json") as f:
