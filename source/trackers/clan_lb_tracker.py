@@ -57,7 +57,7 @@ def track_clan_leaderboards(secrets):
                     clans_metadata[clan["clan"]] = clan
         sortedclans = dict(sorted(clans.items(), key=lambda x:x[1], reverse=True))
         for k,v in sortedclans.items():
-            clan = clans_metadata[k]
+            clan = clans_metadata[k].copy()
             clan["count"] = v
             data["overall_1s"]["clans"].append(clan)
         with open(filename, "w") as f:
@@ -71,7 +71,7 @@ def track_clan_leaderboards(secrets):
                 rank += 1
                 rank_gain = 0
                 count_gain = 0
-                if olddata and key in data:
+                if olddata and key in olddata:
                     rankold = 0
                     for clanold in olddata[key]["clans"]:
                         rankold += 1
