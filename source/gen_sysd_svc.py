@@ -2,6 +2,7 @@ import main
 import os
 
 install_location = "/home/akatsukialt/production/source/main.py"
+work_directory = "/home/akatsukialt/data"
 secrets_path = "/home/akatsukialt/secrets.json"
 user = "akatsukialt"
 service_install_location = "/etc/systemd/system/"
@@ -16,6 +17,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User={user}
+WorkingDirectory={work_directory}
 ExecStart=/usr/bin/env python3 {install_location} (FUNCTION) {secrets_path}
 
 [Install]
