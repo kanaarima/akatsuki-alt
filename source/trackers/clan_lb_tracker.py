@@ -7,13 +7,17 @@ import os
 import datetime
 import unicodedata 
 
-def track(secrets):
+thread = None
+
+def track_clan_leaderboards(secrets):
     while True:
+        thread.sleeping = False
         today = date.today()
         yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
         filename = f"data/clan_lb/{today}.json"
         olddata = None
         if os.path.exists(filename):
+            thread.sleeping = True
             time.sleep(60*60)
             continue
         if os.path.exists(f"data/clan_lb/{yesterday}.json"):
