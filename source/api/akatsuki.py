@@ -10,7 +10,7 @@ def grab_clan_ranking(mode=0, relax=0, page=1, length=50, pp=False):
         length (int, optional): Length. Defaults to 50.
         pp (bool, optional): Use PP leaderboards. Defaults to False (#1 lb).
     """
-    time.sleep(1)
+    handle_api_throttling()
     if pp:
         req = requests.get(f"https://akatsuki.gg/api/v1/clans/stats/all?m={mode}&p={page}&l={length}&rx={relax}")
     else:
@@ -18,6 +18,41 @@ def grab_clan_ranking(mode=0, relax=0, page=1, length=50, pp=False):
     if req.status_code != 200:
         raise ApiException(f"Error code {req.status_code}")
     return req.json()
+
+def grab_clan_stats(clan_id, mode=0, relax=0):
+    handle_api_throttling()
+    req = requests.get(f"https://akatsuki.gg/api/v1/clans/stats?id={clan_id}&m={mode}&rx={relax}")
+    if req.status_code != 200 and req.status_code<500: # ignore code 500
+        raise ApiException(f"Error code {req.status_code}")
+    return req.json()
+
+def grab_all_clan_stats(clan_id):
+    reqs = list()
+    reqs.append(grab_clan_stats(clan_id, mode=0, relax=0))
+    reqs.append(grab_clan_stats(clan_id, mode=0, relax=1))
+    reqs.append(grab_clan_stats(clan_id, mode=0, relax=2))
+    reqs.append(grab_clan_stats(clan_id, mode=1, relax=0))
+    reqs.append(grab_clan_stats(clan_id, mode=1, relax=1))
+    reqs.append(grab_clan_stats(clan_id, mode=2, relax=0))
+    reqs.append(grab_clan_stats(clan_id, mode=2, relax=1))
+    reqs.append(grab_clan_stats(clan_id, mode=3, relax=0))
+    
+    return reqs
+
+def grab_all_clan_stats_avg(clan_id):
+    reqs = grab_all_clan_stats(clan_id)
+    stats = {"ranked_score": 0, "total_score": 0, "replay_watched": 0, "total_hits": 0, "pp": 0}
+    for req in reqs:
+        stats["ranked_score"] += req["clan"]["chosen_mode"]["ranked_score"]
+        stats["total_score"] += req["clan"]["chosen_mode"]["total_score"]
+        stats["replay_watched"] += req["clan"]["chosen_mode"]["replays_watched"]
+        stats["total_hits"] += req["clan"]["chosen_mode"]["total_hits"]
+        stats["pp"] += req["clan"]["chosen_mode"]["pp"]
+    stats["pp"] /= 8
+    return stats
+
+def handle_api_throttling():
+    time.sleep(1)
 
 class ApiException(Exception):
     pass
