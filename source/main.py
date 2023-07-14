@@ -30,7 +30,7 @@ def main(function, secrets):
     while True:
         if stop:
             while True:
-                if not thread.sleeping or not thread.is_alive():
+                if not thread.sleeping and thread.is_alive():
                     print(f"{function} thread still operating. Waiting 5 seconds.")
                     time.sleep(5)
                     continue
