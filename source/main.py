@@ -1,5 +1,5 @@
 from api.threads import WThread as Thread
-import trackers.clan_lb_tracker as clan_lb_tracker 
+import trackers.clan_lb_tracker as clan_lb_tracker
 #from threading import Thread
 import signal
 import time
@@ -7,18 +7,23 @@ import json
 import sys
 
 stop = False
-function_list = (clan_lb_tracker.track_clan_leaderboards,)
-function_class = {clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker} # No reflections
+function_list = (clan_lb_tracker.track_clan_leaderboards, )
+function_class = {
+    clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker
+}  # No reflections
+
 
 def handle_signal(*args):
     global stop
     stop = True
 
+
 def start_thread(function, secrets):
-    thread = Thread(target=function, args=(secrets,), daemon=True)
+    thread = Thread(target=function, args=(secrets, ), daemon=True)
     function_class[function].thread = thread
     thread.init()
     return thread
+
 
 def main(function, secrets):
     # Handle signals from OS
@@ -31,12 +36,15 @@ def main(function, secrets):
         if stop:
             while True:
                 if not thread.sleeping and thread.is_alive():
-                    print(f"{function} thread still operating. Waiting 5 seconds.")
+                    print(
+                        f"{function} thread still operating. Waiting 5 seconds."
+                    )
                     time.sleep(5)
                     continue
                 print("Exit.")
                 sys.exit()
         time.sleep(5)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -48,7 +56,9 @@ if __name__ == "__main__":
             func = f
             break
     if not func:
-        print(f"Invalid function {sys.argv[1]}. Valid functions: {function_list}")
+        print(
+            f"Invalid function {sys.argv[1]}. Valid functions: {function_list}"
+        )
         exit(-1)
     with open(sys.argv[2]) as f:
         secrets = json.load(f)

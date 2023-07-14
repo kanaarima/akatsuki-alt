@@ -33,7 +33,8 @@ if __name__ == "__main__":
     for fn in main.function_list:
         enable_script += f"systemctl enable --now {svc_prefix}{fn.__name__}\n"
         disable_script += f"systemctl disable --now {svc_prefix}{fn.__name__}\n"
-        string = BASE_SERVICE.replace("(FUNCTION)", fn.__name__).replace("(DESCRIPTION)", f"Akatsuki! Alt {fn.__name__} service")
+        string = BASE_SERVICE.replace("(FUNCTION)", fn.__name__).replace(
+            "(DESCRIPTION)", f"Akatsuki! Alt {fn.__name__} service")
         with open(f"data/systemd/{svc_prefix}{fn.__name__}.service", "w") as f:
             f.write(string)
         with open(f"data/systemd/enable.sh", "w") as f:
