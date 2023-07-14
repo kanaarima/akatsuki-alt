@@ -228,7 +228,7 @@ def track_clan_leaderboards(secrets):
                 rank = 0
                 if not data_pp[key]["clans"]:
                     continue
-                for clan in data_pp[key]["clans"]:
+                for clan in data_pp[key]["clans"][:100]:
                     rank += 1
                     rank_gain = 0
                     count_gain = 0
