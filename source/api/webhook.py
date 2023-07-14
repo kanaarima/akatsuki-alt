@@ -24,4 +24,4 @@ def send_string_list(url, channel_id, title, content):
                           "message": str
                       },
                       headers={'Content-Type': 'application/json'})
-        time.sleep(1)
+        time.sleep(1.2)
