@@ -6,6 +6,7 @@ import time
 import os
 import datetime
 import unicodedata 
+import traceback
 
 thread = None
 
@@ -72,39 +73,44 @@ def format_1s_string(clan, rank, rank_gain, count_gain):
 
 def track_clan_leaderboards(secrets):
     while True:
-        thread.sleeping = False
-        today = date.today()
-        yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
-        filename = f"data/clan_lb/{today}.json"
-        olddata = None
-        if os.path.exists(filename):
-            thread.sleeping = True
-            time.sleep(60*5)
-            continue
-        if os.path.exists(f"data/clan_lb/{yesterday}.json"):
-            with open(f"data/clan_lb/{yesterday}.json") as f:
-                olddata = json.load(f)
-        os.makedirs("data/clan_lb/", exist_ok=True)
-        data = get_data_1s()
-        with open(filename, "w") as f:
-            json.dump(data, f, indent=4)
-        for key in data.keys():
-            clan_list = list()
-            rank = 0
-            if not data[key]["clans"]:
+        try:
+            thread.sleeping = False
+            today = date.today()
+            yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+            filename = f"data/clan_lb/{today}.json"
+            olddata = None
+            if os.path.exists(filename):
+                thread.sleeping = True
+                time.sleep(60*5)
                 continue
-            for clan in data[key]["clans"]:
-                rank += 1
-                rank_gain = 0
-                count_gain = 0
-                if olddata and key in olddata:
-                    rankold = 0
-                    for clanold in olddata[key]["clans"]:
-                        rankold += 1
-                        if clanold["clan"] == clan["clan"]:
-                            count_gain = clan["count"]-clanold["count"]
-                            rank_gain = rankold-rank
-                clan_list.append(format_1s_string(clan, rank, rank_gain, count_gain))    
-            if key in secrets:
-                wh.send_string_list(secrets["flask2discord"], secrets[key], f"{today} changes", clan_list)
-
+            if os.path.exists(f"data/clan_lb/{yesterday}.json"):
+                with open(f"data/clan_lb/{yesterday}.json") as f:
+                    olddata = json.load(f)
+            os.makedirs("data/clan_lb/", exist_ok=True)
+            data = get_data_1s()
+            with open(filename, "w") as f:
+                json.dump(data, f, indent=4)
+            for key in data.keys():
+                clan_list = list()
+                rank = 0
+                if not data[key]["clans"]:
+                    continue
+                for clan in data[key]["clans"]:
+                    rank += 1
+                    rank_gain = 0
+                    count_gain = 0
+                    if olddata and key in olddata:
+                        rankold = 0
+                        for clanold in olddata[key]["clans"]:
+                            rankold += 1
+                            if clanold["clan"] == clan["clan"]:
+                                count_gain = clan["count"]-clanold["count"]
+                                rank_gain = rankold-rank
+                    clan_list.append(format_1s_string(clan, rank, rank_gain, count_gain))    
+                if key in secrets:
+                    wh.send_string_list(secrets["flask2discord"], secrets[key], f"{today} changes", clan_list)
+        except Exception as e:
+            print(e)
+            if "error_channel" in secrets:
+                wh.send_string_list(secrets["flask2discord"], secrets["error_channel"], f"Error in {__name__}", (e.__class__.__name__, str(e), traceback.format_exc()))
+            time.sleep(10)
