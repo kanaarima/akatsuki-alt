@@ -20,7 +20,7 @@ def send_string_list(url, channel_id, title, content):
     for str in strings:
         requests.post(url,
                       json={
-                          "channel_id": channel_id,
+                          "channel_id": int(channel_id),
                           "message": str
                       },
                       headers={'Content-Type': 'application/json'})
