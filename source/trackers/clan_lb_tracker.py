@@ -176,6 +176,8 @@ def format_score_string(clan, rank, rank_gain, count_gain):
 
 
 def track_clan_leaderboards(secrets):
+    URL = f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message'
+    print(URL)
     while True:
         try:
             thread.sleeping = False
@@ -221,8 +223,8 @@ def track_clan_leaderboards(secrets):
                     clan_list.append(
                         format_1s_string(clan, rank, rank_gain, count_gain))
                 if key in secrets:
-                    wh.send_string_list(secrets["flask2discord"], secrets[key],
-                                        f"{today} changes", clan_list)
+                    wh.send_string_list(URL, secrets[key], f"{today} changes",
+                                        clan_list)
             for key in data_pp.keys():
                 clan_list = list()
                 rank = 0
@@ -243,8 +245,8 @@ def track_clan_leaderboards(secrets):
                     clan_list.append(
                         format_pp_string(clan, rank, rank_gain, count_gain))
                 if key in secrets:
-                    wh.send_string_list(secrets["flask2discord"], secrets[key],
-                                        f"{today} changes", clan_list)
+                    wh.send_string_list(URL, secrets[key], f"{today} changes",
+                                        clan_list)
             clan_list = list()
             rank = 0
             for clan in ranked_score:
@@ -263,14 +265,12 @@ def track_clan_leaderboards(secrets):
                 clan_list.append(
                     format_score_string(clan, rank, rank_gain, count_gain))
             if "overall_ranked_score" in secrets:
-                wh.send_string_list(secrets["flask2discord"],
-                                    secrets["overall_ranked_score"],
+                wh.send_string_list(URL, secrets["overall_ranked_score"],
                                     f"{today} changes", clan_list)
         except Exception as e:
             print(e)
             if "error_channel" in secrets:
                 wh.send_string_list(
-                    secrets["flask2discord"], secrets["error_channel"],
-                    f"Error in {__name__}",
+                    URL, secrets["error_channel"], f"Error in {__name__}",
                     (e.__class__.__name__, str(e), traceback.format_exc()))
             time.sleep(10)
