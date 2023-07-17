@@ -3,5 +3,5 @@ from threading import Thread
 
 class WThread(Thread):
     def init(self):
-        self.sleeping = False
+        self.sleeping = True
         self.start()
