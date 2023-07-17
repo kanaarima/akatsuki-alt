@@ -147,9 +147,9 @@ def format_pp_string(clan, rank, rank_gain, count_gain):
     else:
         gain_str = ""
     if count_gain < 0:
-        gain_str2 = f"({count_gain})"
+        gain_str2 = f"({count_gain}pp)"
     elif count_gain > 0:
-        gain_str2 = f"(+{count_gain})"
+        gain_str2 = f"(+{count_gain}pp)"
     else:
         gain_str2 = ""
     type_str = "Performance Points"
@@ -165,14 +165,28 @@ def format_score_string(clan, rank, rank_gain, count_gain):
     else:
         gain_str = ""
     if count_gain < 0:
-        gain_str2 = f"({count_gain})"
+        gain_str2 = f"({format_number(count_gain)})"
     elif count_gain > 0:
-        gain_str2 = f"(+{count_gain})"
+        gain_str2 = f"(+{format_number(count_gain)})"
     else:
         gain_str2 = ""
     type_str = "Ranked score"
     clan_name = unicodedata.normalize("NFC", clan["name"])
-    return f"#{rank} {clan_name} {gain_str} {type_str}: {int(clan['chosen_mode']['ranked_score']/1000000)}mil {gain_str2}"
+    return f"#{rank} {clan_name} {gain_str} {type_str}: {format_number(clan['chosen_mode']['ranked_score'])} {gain_str2}"
+
+
+def format_number(actual_number):
+    number = actual_number
+    if actual_number < 0:
+        number *= -1
+    if number < 1000:
+        return str(actual_number)
+    if number < 1000000:
+        return f"{actual_number/1000:.1f}k"
+    if number < 1000000000:
+        return f"{actual_number/1000000:.1f}m"
+    else:
+        return f"{actual_number/1000000000:.1f}b"
 
 
 def track_clan_leaderboards(secrets):
