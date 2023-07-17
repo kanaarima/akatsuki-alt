@@ -177,7 +177,6 @@ def format_score_string(clan, rank, rank_gain, count_gain):
 
 def track_clan_leaderboards(secrets):
     URL = f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message'
-    print(URL)
     while True:
         try:
             thread.sleeping = False
