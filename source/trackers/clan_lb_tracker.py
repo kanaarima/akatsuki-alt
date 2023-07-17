@@ -238,8 +238,8 @@ def track_clan_leaderboards(secrets):
                         for clanold in olddata[key]["clans"]:
                             rankold += 1
                             if clanold["id"] == clan["id"]:
-                                count_gain = clan["chosen_mode"]["pp"] - clan[
-                                    "chosen_mode"]["pp"]
+                                count_gain = clan["chosen_mode"][
+                                    "pp"] - clanold["chosen_mode"]["pp"]
                                 rank_gain = rankold - rank
                     clan_list.append(
                         format_pp_string(clan, rank, rank_gain, count_gain))
@@ -258,7 +258,7 @@ def track_clan_leaderboards(secrets):
                         rankold += 1
                         if clanold["id"] == clan["id"]:
                             count_gain = clan["chosen_mode"][
-                                "ranked_score"] - clan["chosen_mode"][
+                                "ranked_score"] - clanold["chosen_mode"][
                                     "ranked_score"]
                             rank_gain = rankold - rank
                 clan_list.append(
