@@ -1,5 +1,6 @@
 from api.threads import WThread as Thread
 import trackers.clan_lb_tracker as clan_lb_tracker
+import api.flask2discord as flask2discord
 #from threading import Thread
 import signal
 import time
@@ -7,9 +8,11 @@ import json
 import sys
 
 stop = False
-function_list = (clan_lb_tracker.track_clan_leaderboards, )
+function_list = (clan_lb_tracker.track_clan_leaderboards,
+                 flask2discord.flask2discord)
 function_class = {
-    clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker
+    clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker,
+    flask2discord.flask2discord: flask2discord
 }  # No reflections
 
 
