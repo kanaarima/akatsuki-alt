@@ -2,6 +2,14 @@ import requests
 import time
 
 
+def grab_stats(userid):
+    req = requests.get(
+        f"https://akatsuki.gg/api/v1/users/full?id={userid}&relax=-1")
+    if req.status_code != 200 and req.status_code < 500:  # ignore code 500
+        raise ApiException(f"Error code {req.status_code}")
+    return req.json()
+
+
 def grab_clan_ranking(mode=0, relax=0, page=1, pages=1, pp=False):
     """_summary_
     Args:
