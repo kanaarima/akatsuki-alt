@@ -34,6 +34,8 @@ async def on_message(message: discord.Message):
             await set_default_gamemode(message, args)
         elif message.content.startswith('$show'):
             await show(message, args)
+        elif message.content.startswith('$reset'):
+            await reset(message, args)
     except Exception as e:
         print(repr(e))
         print(traceback.format_exc())
@@ -160,6 +162,22 @@ async def show(message: discord.Message, args):
             f"Comparing to {timeold}. Last fetch: {timenew}. Use $reset to clear."
         )
         await message.reply(embed=e)
+    else:
+        await message.reply(
+            "You don't have an account linked! Use $link {UserID} first!")
+
+
+async def reset(message: discord.Message, args):
+    if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
+        with open(f"data/trackerbot/{message.author.id}.json") as f:
+            data = json.load(f)
+        if len(data["fetches"]) == 0:
+            await message.reply("You have no data.")
+            return
+        data["fetches"] = []
+        with open(f"data/trackerbot/{message.author.id}.json", "w") as f:
+            json.dump(data, f)
+        await message.reply("Data resetted.")
     else:
         await message.reply(
             "You don't have an account linked! Use $link {UserID} first!")
