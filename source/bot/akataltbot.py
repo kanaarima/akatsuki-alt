@@ -159,7 +159,7 @@ async def show(message: discord.Message, args):
                                              '%d/%m/%Y %H:%M:%S')
         e.set_footer(
             text=
-            f"Comparing to {timeold}. Last fetch: {timenew}. Use $reset to clear."
+            f"Comparing to {timeold} (UTC+2). Last fetch: {timenew}. Use $reset to clear."
         )
         await message.reply(embed=e)
     else:
