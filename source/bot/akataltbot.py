@@ -5,6 +5,7 @@ import traceback
 import datetime
 import discord
 import json
+import time
 import os
 
 intents = discord.Intents.default()
@@ -16,6 +17,7 @@ thread = None
 
 @client.event
 async def on_ready():
+    akatsuki.update_scorelb()
     print(f'We have logged in as {client.user}')
 
 
@@ -127,6 +129,9 @@ async def show(message: discord.Message, args):
         max_combo = f"{latest['max_combo']:,} {get_gain_string(oldest['max_combo'], latest['max_combo'])}"
         global_leaderboard_rank = f"#{latest['global_leaderboard_rank']} {get_gain_string(oldest['global_leaderboard_rank'], latest['global_leaderboard_rank'],swap=True)}"
         country_leaderboard_rank = f"#{latest['country_leaderboard_rank']} {get_gain_string(oldest['country_leaderboard_rank'], latest['country_leaderboard_rank'],swap=True)}"
+        global_score_rank = f"#{latest['global_rank_score']} {get_gain_string(oldest['global_rank_score'], latest['global_rank_score'],swap=True)}"
+        country_score_rank = f"#{latest['country_rank_score']} {get_gain_string(oldest['country_rank_score'], latest['country_rank_score'],swap=True)}"
+
         pp = f"{latest['pp']:,}pp {get_gain_string(oldest['pp'], latest['pp'])}"
 
         e.add_field(name=f"Ranked score", value=ranked_score)
@@ -141,6 +146,8 @@ async def show(message: discord.Message, args):
         e.add_field(name=f"Global rank", value=global_leaderboard_rank)
         e.add_field(name=f"Country rank", value=country_leaderboard_rank)
         e.add_field(name=f"Performance points", value=pp)
+        e.add_field(name=f"Global score rank", value=global_score_rank)
+        e.add_field(name=f"Country score rank", value=country_score_rank)
 
         e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
         timeold = datetime.datetime.strptime(data['fetches'][0]["time"],

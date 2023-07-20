@@ -1,13 +1,28 @@
 import requests
+import datetime
 import time
+
+scorelb = dict()
+last_fetch = None
+lock = False
 
 
 def grab_stats(userid):
+    update_scorelb()
     req = requests.get(
         f"https://akatsuki.gg/api/v1/users/full?id={userid}&relax=-1")
     if req.status_code != 200 and req.status_code < 500:  # ignore code 500
         raise ApiException(f"Error code {req.status_code}")
-    return req.json()
+    data = req.json()
+    rx = 0
+    for dikt in scorelb:
+        for key in dikt.keys():
+            global_score, country_score = get_score_rank(
+                userid, key, rx, data['country'])
+            data['stats'][rx][key]['global_rank_score'] = global_score
+            data['stats'][rx][key]['country_rank_score'] = country_score
+        rx += 1
+    return data
 
 
 def grab_clan_ranking(mode=0, relax=0, page=1, pages=1, pp=False):
@@ -83,12 +98,60 @@ def grab_all_clan_stats_avg(clan_id):
 
 
 def grab_score_leaderboards(mode=0, relax=0, page=1, length=500):
+    time.sleep(0.4)
     req = requests.get(
         f"https://akatsuki.gg/api/v1/leaderboard?mode={mode}&p={page}&l={length}&country=&rx={relax}&sort=score"
     )
     if req.status_code != 200 and req.status_code < 500:  # ignore code 500
         raise ApiException(f"Error code {req.status_code}")
     return req.json()
+
+
+def get_score_rank(userid, mode, relax, country):
+    update_scorelb()
+    global_rank = 1
+    country_rank = 1
+    for user in scorelb[relax][mode]:
+        if user['id'] == userid:
+            return global_rank, country_rank
+        global_rank += 1
+        if user['country'] == country:
+            country_rank += 1
+    return 0, 0
+
+
+def update_scorelb():
+    global lock, last_fetch, scorelb
+    while lock:
+        time.sleep(1)
+    lock = True
+    if not last_fetch or (datetime.datetime.now() -
+                          last_fetch) > datetime.timedelta(minutes=30):
+        last_fetch = datetime.datetime.now()
+        scorelb = [{
+            'std': list(),
+            'taiko': list(),
+            'ctb': list(),
+            'mania': list()
+        }, {
+            'std': list(),
+            'taiko': list(),
+            'ctb': list()
+        }, {
+            'std': list()
+        }]
+        scorelb[0]["std"] = grab_score_leaderboards(mode=0, relax=0)["users"]
+        scorelb[1]["std"] = grab_score_leaderboards(mode=0, relax=1)["users"]
+        scorelb[2]["std"] = grab_score_leaderboards(mode=0, relax=2)["users"]
+        scorelb[0]["taiko"] = grab_score_leaderboards(mode=1, relax=0)["users"]
+        scorelb[1]["taiko"] = grab_score_leaderboards(mode=1, relax=1)["users"]
+        scorelb[0]["ctb"] = grab_score_leaderboards(mode=2, relax=0)["users"]
+        scorelb[1]["ctb"] = grab_score_leaderboards(mode=2, relax=1)["users"]
+        scorelb[0]["mania"] = grab_score_leaderboards(mode=3, relax=0)["users"]
+        for i in range(2, 4 + 1):
+            pass
+
+    lock = False
 
 
 def handle_api_throttling():
