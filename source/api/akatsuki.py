@@ -5,6 +5,7 @@ import time
 scorelb = dict()
 last_fetch = None
 lock = False
+modes = {'std': 0, 'taiko': 1, 'ctb': 2, 'mania': 3}
 
 
 def grab_stats(userid):
@@ -19,6 +20,11 @@ def grab_stats(userid):
         for key in dikt.keys():
             global_score, country_score = get_score_rank(
                 userid, key, rx, data['country'])
+            count_1s = grab_user_1s(userid=userid,
+                                    mode=modes[key],
+                                    relax=rx,
+                                    length=1)['total']
+            data['stats'][rx][key]['count_1s'] = count_1s
             data['stats'][rx][key]['global_rank_score'] = global_score
             data['stats'][rx][key]['country_rank_score'] = country_score
         rx += 1
@@ -101,6 +107,16 @@ def grab_score_leaderboards(mode=0, relax=0, page=1, length=500):
     time.sleep(0.4)
     req = requests.get(
         f"https://akatsuki.gg/api/v1/leaderboard?mode={mode}&p={page}&l={length}&country=&rx={relax}&sort=score"
+    )
+    if req.status_code != 200 and req.status_code < 500:  # ignore code 500
+        raise ApiException(f"Error code {req.status_code}")
+    return req.json()
+
+
+def grab_user_1s(userid, mode=0, relax=0, page=1, length=10):
+    time.sleep(0.2)
+    req = requests.get(
+        f"https://akatsuki.gg/api/v1/users/scores/first?mode={mode}&p={page}&l={length}&rx={relax}&id={userid}&uid={userid}"
     )
     if req.status_code != 200 and req.status_code < 500:  # ignore code 500
         raise ApiException(f"Error code {req.status_code}")

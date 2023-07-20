@@ -131,6 +131,7 @@ async def show(message: discord.Message, args):
         country_leaderboard_rank = f"#{latest['country_leaderboard_rank']} {get_gain_string(oldest['country_leaderboard_rank'], latest['country_leaderboard_rank'],swap=True)}"
         global_score_rank = f"#{latest['global_rank_score']} {get_gain_string(oldest['global_rank_score'], latest['global_rank_score'],swap=True)}"
         country_score_rank = f"#{latest['country_rank_score']} {get_gain_string(oldest['country_rank_score'], latest['country_rank_score'],swap=True)}"
+        count_1s = f"{latest['count_1s']} {get_gain_string(oldest['count_1s'], latest['count_1s'])}"
 
         pp = f"{latest['pp']:,}pp {get_gain_string(oldest['pp'], latest['pp'])}"
 
@@ -148,7 +149,7 @@ async def show(message: discord.Message, args):
         e.add_field(name=f"Performance points", value=pp)
         e.add_field(name=f"Global score rank", value=global_score_rank)
         e.add_field(name=f"Country score rank", value=country_score_rank)
-
+        e.add_field(name=f"#1 Count", value=count_1s)
         e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
         timeold = datetime.datetime.strptime(data['fetches'][0]["time"],
                                              '%d/%m/%Y %H:%M:%S')
