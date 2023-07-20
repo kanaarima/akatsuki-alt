@@ -165,6 +165,8 @@ async def show(message: discord.Message, args):
 
 
 def get_gain_string(old, new, float=False, swap=False):
+    if not old:
+        return new
     if swap:
         oold = old
         old = new
