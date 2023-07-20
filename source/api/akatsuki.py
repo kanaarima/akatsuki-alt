@@ -82,6 +82,15 @@ def grab_all_clan_stats_avg(clan_id):
     return stats
 
 
+def grab_score_leaderboards(mode=0, relax=0, page=1, length=500):
+    req = requests.get(
+        f"https://akatsuki.gg/api/v1/leaderboard?mode={mode}&p={page}&l={length}&country=&rx={relax}&sort=score"
+    )
+    if req.status_code != 200 and req.status_code < 500:  # ignore code 500
+        raise ApiException(f"Error code {req.status_code}")
+    return req.json()
+
+
 def handle_api_throttling():
     time.sleep(1)
 
