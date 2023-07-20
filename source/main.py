@@ -30,7 +30,7 @@ def start_thread(function, secrets):
     return thread
 
 
-def main(function, secrets):
+def main(function, secrets, debug):
     # Handle signals from OS
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
@@ -45,7 +45,8 @@ def main(function, secrets):
                         f"{function} thread still operating. Waiting 5 seconds."
                     )
                     time.sleep(5)
-                    continue
+                    if not debug:
+                        continue
                 print("Exit.")
                 sys.exit()
         time.sleep(5)
@@ -67,4 +68,8 @@ if __name__ == "__main__":
         exit(-1)
     with open(sys.argv[2]) as f:
         secrets = json.load(f)
-    main(func, secrets)
+    debug = False
+    if len(sys.argv) > 3:
+        if sys.argv[3] == "debug":
+            debug = True
+    main(func, secrets, debug)
