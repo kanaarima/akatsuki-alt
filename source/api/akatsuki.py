@@ -149,7 +149,10 @@ def update_scorelb():
         scorelb[1]["ctb"] = grab_score_leaderboards(mode=2, relax=1)["users"]
         scorelb[0]["mania"] = grab_score_leaderboards(mode=3, relax=0)["users"]
         for i in range(2, 4 + 1):
-            pass
+            scorelb[0]["std"].extend(
+                grab_score_leaderboards(mode=0, relax=0, page=i)["users"])
+            scorelb[1]["std"].extend(
+                grab_score_leaderboards(mode=0, relax=1, page=i)["users"])
 
     lock = False
 
