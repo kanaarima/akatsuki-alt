@@ -1,6 +1,7 @@
 from discord import app_commands
 from typing import Optional
 import api.akatsuki as akatsuki
+import traceback
 import datetime
 import discord
 import json
@@ -33,6 +34,7 @@ async def on_message(message: discord.Message):
             await show(message, args)
     except Exception as e:
         print(repr(e))
+        print(traceback.format_exc())
     thread.sleeping = True
 
 
@@ -115,11 +117,57 @@ async def show(message: discord.Message, args):
     if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
         data = await update_fetches(f"data/trackerbot/{message.author.id}.json"
                                     )
-        debug = f"{data['fetches'][-1]['stats']['stats'][0]['std']['ranked_score']}"
-        await message.reply(debug)
+        e = discord.Embed(
+            colour=discord.Color.og_blurple(),
+            title=f'Stats for {data["fetches"][0]["stats"]["username"]}')
+        rx = data['defaultrelax']
+        mode = data['defaultmode']
+        oldest = data['fetches'][0]['stats']['stats'][rx][mode]
+        latest = data['fetches'][-1]['stats']['stats'][rx][mode]
+        ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
+        total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
+        total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"
+        playcount = f"{latest['playcount']:,} {get_gain_string(oldest['playcount'], latest['playcount'])}"
+        playtime = f"{latest['playtime']/60/60:.0f}h {get_gain_string(oldest['playtime']/60/60, latest['playtime']/60/60,float=True)}"
+        replays_watched = f"{latest['replays_watched']} {get_gain_string(oldest['replays_watched'], latest['replays_watched'])}"
+        level = f"{latest['level']:.2f} {get_gain_string(oldest['level'], latest['level'], float=True)}"
+        accuracy = f"{latest['accuracy']:.2f}% {get_gain_string(oldest['accuracy'], latest['accuracy'], float=True)}"
+        max_combo = f"{latest['max_combo']:,} {get_gain_string(oldest['max_combo'], latest['max_combo'])}"
+        global_leaderboard_rank = f"#{latest['global_leaderboard_rank']} {get_gain_string(oldest['global_leaderboard_rank'], latest['global_leaderboard_rank'],swap=True)}"
+        country_leaderboard_rank = f"#{latest['country_leaderboard_rank']} {get_gain_string(oldest['country_leaderboard_rank'], latest['country_leaderboard_rank'],swap=True)}"
+        pp = f"{latest['pp']:,}pp {get_gain_string(oldest['pp'], latest['pp'])}"
+
+        e.add_field(name=f"Ranked score", value=ranked_score)
+        e.add_field(name=f"Total score", value=total_score)
+        e.add_field(name=f"Total hits", value=total_hits)
+        e.add_field(name=f"Play count", value=playcount)
+        e.add_field(name=f"Play Time", value=playtime)
+        e.add_field(name=f"Replays watched", value=replays_watched)
+        e.add_field(name=f"Level", value=level)
+        e.add_field(name=f"Accuracy", value=accuracy)
+        e.add_field(name=f"Max combo", value=max_combo)
+        e.add_field(name=f"Global rank", value=global_leaderboard_rank)
+        e.add_field(name=f"Country rank", value=country_leaderboard_rank)
+        e.add_field(name=f"Performance points", value=pp)
+
+        e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
+        await message.reply(embed=e)
     else:
         await message.reply(
             "You don't have an account linked! Use $link {UserID} first!")
+
+
+def get_gain_string(old, new, float=False, swap=False):
+    if swap:
+        oold = old
+        old = new
+        new = oold
+    if old == new:
+        return ""
+    if old > new:
+        return f'({new-old:,.2f})' if float else f'({new-old:,})'
+    else:
+        return f'(+{new-old:,.2f})' if float else f'(+{new-old:,})'
 
 
 async def update_fetches(file):
@@ -142,7 +190,8 @@ async def update_fetches(file):
         })
         update = True
     else:
-        if (datetime.datetime.now() - time).seconds > 5 * 60:
+        update = True
+        if (datetime.datetime.now() - time) > datetime.timedelta(minutes=5):
             fetches.append({
                 'stats':
                 akatsuki.grab_stats(data["userid"]),
