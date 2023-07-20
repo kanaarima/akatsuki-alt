@@ -151,6 +151,14 @@ async def show(message: discord.Message, args):
         e.add_field(name=f"Performance points", value=pp)
 
         e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
+        timeold = datetime.datetime.strptime(data['fetches'][0]["time"],
+                                             '%d/%m/%Y %H:%M:%S')
+        timenew = datetime.datetime.strptime(data['fetches'][-1]["time"],
+                                             '%d/%m/%Y %H:%M:%S')
+        e.set_footer(
+            text=
+            f"Comparing to {timeold}. Last fetch: {timenew}. Use $reset to clear."
+        )
         await message.reply(embed=e)
     else:
         await message.reply(
