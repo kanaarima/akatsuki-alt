@@ -43,21 +43,9 @@ async def set_default_gamemode(message: discord.Message, args):
         await message.reply(
             "Specify a gamemode! (std(rx/ap),taiko(rx),ctb(rx),mania)")
         return
-    modes = {
-        "std": ("std", 0),
-        "stdrx": ("std", 1),
-        "stdap": ("std", 2),
-        "taiko": ("taiko", 0),
-        "taikorx": ("taiko", 1),
-        "ctb": ("ctb", 0),
-        "ctbrx": ("ctb", 1),
-        "mania": ("mania", 0)
-    }
-    if args[1].lower() not in modes:
-        await message.reply(
-            "Invalid gamemode! Use (std(rx/ap),taiko(rx),ctb(rx),mania)")
+    mode = await verify_mode_string(message, args[1])
+    if not mode:
         return
-    mode = modes[args[1].lower()]
     if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
         with open(f"data/trackerbot/{message.author.id}.json") as f:
             data = json.load(f)
@@ -122,6 +110,10 @@ async def show(message: discord.Message, args):
             title=f'Stats for {data["fetches"][0]["stats"]["username"]}')
         rx = data['defaultrelax']
         mode = data['defaultmode']
+        if len(args) > 1:
+            mode, rx = await verify_mode_string(message, args[1])
+            if not mode:
+                return
         oldest = data['fetches'][0]['stats']['stats'][rx][mode]
         latest = data['fetches'][-1]['stats']['stats'][rx][mode]
         ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
@@ -176,6 +168,24 @@ def get_gain_string(old, new, float=False, swap=False):
         return f'({new-old:,.2f})' if float else f'({new-old:,})'
     else:
         return f'(+{new-old:,.2f})' if float else f'(+{new-old:,})'
+
+
+async def verify_mode_string(message, arg):
+    modes = {
+        "std": ("std", 0),
+        "stdrx": ("std", 1),
+        "stdap": ("std", 2),
+        "taiko": ("taiko", 0),
+        "taikorx": ("taiko", 1),
+        "ctb": ("ctb", 0),
+        "ctbrx": ("ctb", 1),
+        "mania": ("mania", 0)
+    }
+    if arg.lower() not in modes:
+        await message.reply(
+            "Invalid gamemode! Use (std(rx/ap),taiko(rx),ctb(rx),mania)")
+        return None, None
+    return modes[arg.lower()]
 
 
 async def update_fetches(file):
