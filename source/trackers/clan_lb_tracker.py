@@ -87,12 +87,13 @@ def get_overall_ranked_score(data_pp):
     res = list()
     clans = dict()
     clans_metadata = dict()
-    for clan in data_pp["clans"]:
-        if clan["id"] in clans:
-            clans[clan["id"]] += clan["chosen_mode"]["ranked_score"]
-        else:
-            clans[clan["id"]] = clan["chosen_mode"]["ranked_score"]
-            clans_metadata[clan["id"]] = clan
+    for key in data_pp.keys():
+        for clan in data_pp[key]["clans"]:
+            if clan["id"] in clans:
+                clans[clan["id"]] += clan["chosen_mode"]["ranked_score"]
+            else:
+                clans[clan["id"]] = clan["chosen_mode"]["ranked_score"]
+                clans_metadata[clan["id"]] = clan
     sortedclans = dict(sorted(clans.items(), key=lambda x: x[1], reverse=True))
     for k, v in sortedclans.items():
         clan = copy.deepcopy(clans_metadata[k])
@@ -209,7 +210,7 @@ def track_clan_leaderboards(secrets):
             os.makedirs("data/clan_lb/", exist_ok=True)
             data_1s = get_data_1s()
             data_pp = get_data_pp()
-            ranked_score = get_overall_ranked_score(data_pp["overall_pp"])
+            ranked_score = get_overall_ranked_score(data_pp)
             with open(filename, "w") as f:
                 json.dump(data_1s | data_pp
                           | {"overall_ranked_score": {
