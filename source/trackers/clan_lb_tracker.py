@@ -64,6 +64,20 @@ def get_data_1s():
     return data
 
 
+def get_data_score(data_pp):
+    data = dict()
+    data["std_vn_score"] = get_ranked_score(data_pp["std_vn_pp"])
+    data["std_rx_score"] = get_ranked_score(data_pp["std_rx_pp"])
+    data["std_ap_score"] = get_ranked_score(data_pp["std_ap_pp"])
+    data["taiko_vn_score"] = get_ranked_score(data_pp["taiko_vn_pp"])
+    data["taiko_rx_score"] = get_ranked_score(data_pp["taiko_rx_pp"])
+    data["ctb_vn_score"] = get_ranked_score(data_pp["ctb_vn_pp"])
+    data["ctb_rx_score"] = get_ranked_score(data_pp["ctb_rx_pp"])
+    data["mania_vn_score"] = get_ranked_score(data_pp["mania_vn_pp"])
+    data["overall_ranked_score"] = get_overall_ranked_score(data_pp)
+    return data
+
+
 def get_overall_1s(data):
     res = list()
     clans = dict()
@@ -99,7 +113,25 @@ def get_overall_ranked_score(data_pp):
         clan = copy.deepcopy(clans_metadata[k])
         clan["chosen_mode"]["ranked_score"] = v
         res.append(clan)
-    return res[:100]
+    return {"clans": res[:100]}
+
+
+def get_ranked_score(data_pp):
+    res = list()
+    clans = dict()
+    clans_metadata = dict()
+    for clan in data_pp["clans"]:
+        if clan["id"] in clans:
+            clans[clan["id"]] += clan["chosen_mode"]["ranked_score"]
+        else:
+            clans[clan["id"]] = clan["chosen_mode"]["ranked_score"]
+            clans_metadata[clan["id"]] = clan
+    sortedclans = dict(sorted(clans.items(), key=lambda x: x[1], reverse=True))
+    for k, v in sortedclans.items():
+        clan = copy.deepcopy(clans_metadata[k])
+        clan["chosen_mode"]["ranked_score"] = v
+        res.append(clan)
+    return {"clans": res[:100]}
 
 
 def get_overall_pp(data):
@@ -210,14 +242,9 @@ def track_clan_leaderboards(secrets):
             os.makedirs("data/clan_lb/", exist_ok=True)
             data_1s = get_data_1s()
             data_pp = get_data_pp()
-            ranked_score = get_overall_ranked_score(data_pp)
+            ranked_score = get_data_score(data_pp)
             with open(filename, "w") as f:
-                json.dump(data_1s | data_pp
-                          | {"overall_ranked_score": {
-                              "clans": ranked_score
-                          }},
-                          f,
-                          indent=4)
+                json.dump(data_1s | data_pp | ranked_score, f, indent=4)
             for key in data_1s.keys():
                 clan_list = list()
                 rank = 0
@@ -261,26 +288,27 @@ def track_clan_leaderboards(secrets):
                 if key in secrets:
                     wh.send_string_list(URL, secrets[key], f"{today} changes",
                                         clan_list)
-            clan_list = list()
-            rank = 0
-            for clan in ranked_score:
-                rank += 1
-                rank_gain = 0
-                count_gain = 0
-                if olddata and "overall_ranked_score" in olddata:
-                    rankold = 0
-                    for clanold in olddata["overall_ranked_score"]["clans"]:
-                        rankold += 1
-                        if clanold["id"] == clan["id"]:
-                            count_gain = clan["chosen_mode"][
-                                "ranked_score"] - clanold["chosen_mode"][
-                                    "ranked_score"]
-                            rank_gain = rankold - rank
-                clan_list.append(
-                    format_score_string(clan, rank, rank_gain, count_gain))
-            if "overall_ranked_score" in secrets:
-                wh.send_string_list(URL, secrets["overall_ranked_score"],
-                                    f"{today} changes", clan_list)
+            for key in ranked_score.keys():
+                clan_list = list()
+                rank = 0
+                for clan in ranked_score[key]["clans"]:
+                    rank += 1
+                    rank_gain = 0
+                    count_gain = 0
+                    if olddata and key in olddata:
+                        rankold = 0
+                        for clanold in olddata[key]["clans"]:
+                            rankold += 1
+                            if clanold["id"] == clan["id"]:
+                                count_gain = clan["chosen_mode"][
+                                    "ranked_score"] - clanold["chosen_mode"][
+                                        "ranked_score"]
+                                rank_gain = rankold - rank
+                    clan_list.append(
+                        format_score_string(clan, rank, rank_gain, count_gain))
+                if key in secrets:
+                    wh.send_string_list(URL, secrets[key], f"{today} changes",
+                                        clan_list)
         except Exception as e:
             print(e)
             if "error_channel" in secrets:
