@@ -167,7 +167,7 @@ def update_scorelb():
 
 
 def handle_api_throttling():
-    time.sleep(1)
+    time.sleep(0.7)
 
 
 class ApiException(Exception):
