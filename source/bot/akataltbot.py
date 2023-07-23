@@ -13,6 +13,7 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 thread = None
+bot_prefix = None
 
 
 @client.event
@@ -27,17 +28,16 @@ async def on_message(message: discord.Message):
     if message.author == client.user:
         return
     args = message.content.split(" ")
-    prefix = "@"
     try:
         if message.content.startswith("$link"):
             await link(message, args)
-        elif message.content.startswith(f"{prefix}setgamemode"):
+        elif message.content.startswith(f"{bot_prefix}setgamemode"):
             await set_default_gamemode(message, args)
-        elif message.content.startswith(f"{prefix}showclan"):
+        elif message.content.startswith(f"{bot_prefix}showclan"):
             await show_clan(message, args)
-        elif message.content.startswith(f"{prefix}show"):
+        elif message.content.startswith(f"{bot_prefix}show"):
             await show(message, args)
-        elif message.content.startswith(f"{prefix}reset"):
+        elif message.content.startswith(f"{bot_prefix}reset"):
             await reset(message, args)
     except Exception as e:
         print(repr(e))
@@ -361,4 +361,6 @@ async def update_fetches(file):
 
 
 def akataltbot(secrets):
+    global bot_prefix
+    bot_prefix = secrets["discord_command_prefix"]
     client.run(secrets["discord_token"])
