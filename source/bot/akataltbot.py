@@ -18,7 +18,7 @@ thread = None
 @client.event
 async def on_ready():
     akatsuki.update_scorelb()
-    print(f'We have logged in as {client.user}')
+    print(f"We have logged in as {client.user}")
 
 
 @client.event
@@ -27,16 +27,17 @@ async def on_message(message: discord.Message):
     if message.author == client.user:
         return
     args = message.content.split(" ")
+    prefix = "@"
     try:
-        if message.content.startswith('$link'):
+        if message.content.startswith("$link"):
             await link(message, args)
-        elif message.content.startswith('$setgamemode'):
+        elif message.content.startswith(f"{prefix}setgamemode"):
             await set_default_gamemode(message, args)
-        elif message.content.startswith('$showclan'):
+        elif message.content.startswith(f"{prefix}showclan"):
             await show_clan(message, args)
-        elif message.content.startswith('$show'):
+        elif message.content.startswith(f"{prefix}show"):
             await show(message, args)
-        elif message.content.startswith('$reset'):
+        elif message.content.startswith(f"{prefix}reset"):
             await reset(message, args)
     except Exception as e:
         print(repr(e))
@@ -46,8 +47,7 @@ async def on_message(message: discord.Message):
 
 async def set_default_gamemode(message: discord.Message, args):
     if len(args) < 2:
-        await message.reply(
-            "Specify a gamemode! (std(rx/ap),taiko(rx),ctb(rx),mania)")
+        await message.reply("Specify a gamemode! (std(rx/ap),taiko(rx),ctb(rx),mania)")
         return
     mode = await verify_mode_string(message, args[1])
     if not mode:
@@ -62,7 +62,8 @@ async def set_default_gamemode(message: discord.Message, args):
         await message.reply("Default gamemode successfully set.")
     else:
         await message.reply(
-            "You don't have an account linked! Use $link {UserID} first!")
+            "You don't have an account linked! Use $link {UserID} first!"
+        )
 
 
 async def link(message: discord.Message, args):
@@ -85,18 +86,15 @@ async def link(message: discord.Message, args):
     os.makedirs("data/trackerbot/", exist_ok=True)
     try:
         data = {
-            "userid":
-            int(args[1]),
-            "defaultmode":
-            "std",
-            "defaultrelax":
-            0,
-            "fetches": [{
-                "time":
-                datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-                "stats":
-                akatsuki.grab_stats(int(args[1]))
-            }]
+            "userid": int(args[1]),
+            "defaultmode": "std",
+            "defaultrelax": 0,
+            "fetches": [
+                {
+                    "time": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "stats": akatsuki.grab_stats(int(args[1])),
+                }
+            ],
         }
         with open(f"data/trackerbot/{message.author.id}.json", "w") as f:
             json.dump(data, f, indent=4)
@@ -104,24 +102,24 @@ async def link(message: discord.Message, args):
             f'Linked to {data["fetches"][0]["stats"]["username"]}. Use $setgamemode to set default gamemode.'
         )
     except akatsuki.ApiException:
-        await message.channel.send('Invalid userID.')
+        await message.channel.send("Invalid userID.")
 
 
 async def show(message: discord.Message, args):
     if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
-        data = await update_fetches(f"data/trackerbot/{message.author.id}.json"
-                                    )
+        data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
         e = discord.Embed(
             colour=discord.Color.og_blurple(),
-            title=f'Stats for {data["fetches"][0]["stats"]["username"]}')
-        rx = data['defaultrelax']
-        mode = data['defaultmode']
+            title=f'Stats for {data["fetches"][0]["stats"]["username"]}',
+        )
+        rx = data["defaultrelax"]
+        mode = data["defaultmode"]
         if len(args) > 1:
             mode, rx = await verify_mode_string(message, args[1])
             if not mode:
                 return
-        oldest = data['fetches'][0]['stats']['stats'][rx][mode]
-        latest = data['fetches'][-1]['stats']['stats'][rx][mode]
+        oldest = data["fetches"][0]["stats"]["stats"][rx][mode]
+        latest = data["fetches"][-1]["stats"]["stats"][rx][mode]
         ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
         total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
         total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"
@@ -155,32 +153,37 @@ async def show(message: discord.Message, args):
         e.add_field(name=f"Country score rank", value=country_score_rank)
         e.add_field(name=f"#1 Count", value=count_1s)
         e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
-        timeold = datetime.datetime.strptime(data['fetches'][0]["time"],
-                                             '%d/%m/%Y %H:%M:%S')
-        timenew = datetime.datetime.strptime(data['fetches'][-1]["time"],
-                                             '%d/%m/%Y %H:%M:%S')
+        timeold = datetime.datetime.strptime(
+            data["fetches"][0]["time"], "%d/%m/%Y %H:%M:%S"
+        )
+        timenew = datetime.datetime.strptime(
+            data["fetches"][-1]["time"], "%d/%m/%Y %H:%M:%S"
+        )
         e.set_footer(
-            text=
-            f"Comparing to {timeold} (UTC+2). Last fetch: {timenew}. Use $reset to clear."
+            text=f"Comparing to {timeold} (UTC+2). Last fetch: {timenew}. Use $reset to clear."
         )
         await message.reply(embed=e)
     else:
         await message.reply(
-            "You don't have an account linked! Use $link {UserID} first!")
+            "You don't have an account linked! Use $link {UserID} first!"
+        )
 
 
 async def show_clan(message: discord.Message, args):
     if not os.path.exists(f"data/trackerbot/{message.author.id}.json"):
         await message.reply(
-            "You don't have an account linked! Use $link {UserID} first!")
+            "You don't have an account linked! Use $link {UserID} first!"
+        )
         return
     data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
-    if not data['fetches'][-1]['stats']['clan']['id']:
+    if not data["fetches"][-1]["stats"]["clan"]["id"]:
         await message.reply("You haven't join any clan!")
         return
+    clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
     e = discord.Embed(
         colour=discord.Color.og_blurple(),
-        title=f'Stats for {data["fetches"][-1]["stats"]["clan"]["name"]}')
+        title=f'Stats for {data["fetches"][-1]["stats"]["clan"]["name"]}',
+    )
     today = datetime.date.today()
     filename = f"data/clan_lb/{today}.json"
     if not os.path.exists(filename):
@@ -188,7 +191,6 @@ async def show_clan(message: discord.Message, args):
             "Leaderboard data is still being generated. Please wait a few minutes."
         )
         return
-
     with open(filename) as f:
         lbdata = json.load(f)
 
@@ -196,89 +198,52 @@ async def show_clan(message: discord.Message, args):
         i = 1
         for x in data:
             if type == "pp":
-                if x['id'] == clan_id:
+                if x["id"] == clan_id:
                     return f'#{i} ({x["chosen_mode"]["pp"]}pp)'
             elif type == "score":
-                if x['id'] == clan_id:
+                if x["id"] == clan_id:
                     return f'#{i} ({int(x["chosen_mode"]["ranked_score"]/1000000)} mil)'
             else:
-                if x['clan'] == clan_id:
+                if x["clan"] == clan_id:
                     return f'#{i} ({x["count"]} #1)'
             i += 1
         return "-"
 
-    std_vn_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_vn_1s']['clans'])
-    std_rx_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_rx_1s']['clans'])
-    std_ap_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_ap_1s']['clans'])
-    std_vn_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_vn_pp']['clans'],
-                            type="pp")
-    std_rx_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_rx_pp']['clans'],
-                            type="pp")
-    std_ap_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['std_ap_pp']['clans'],
-                            type="pp")
-    std_vn_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                               lbdata['std_vn_score']['clans'],
-                               type="score")
-    std_rx_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                               lbdata['std_rx_score']['clans'],
-                               type="score")
-    std_ap_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                               lbdata['std_ap_score']['clans'],
-                               type="score")
-    taiko_vn_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['taiko_vn_1s']['clans'])
-    taiko_rx_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['taiko_rx_1s']['clans'])
-    taiko_vn_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['taiko_vn_pp']['clans'],
-                              type="pp")
-    taiko_rx_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['taiko_rx_pp']['clans'],
-                              type="pp")
-    taiko_vn_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                                 lbdata['taiko_vn_score']['clans'],
-                                 type="score")
-    taiko_rx_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                                 lbdata['taiko_rx_score']['clans'],
-                                 type="score")
-    ctb_vn_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['ctb_vn_1s']['clans'])
-    ctb_rx_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['ctb_rx_1s']['clans'])
-    ctb_vn_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['ctb_vn_pp']['clans'],
-                            type="pp")
-    ctb_rx_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                            lbdata['ctb_rx_pp']['clans'],
-                            type="pp")
-    ctb_vn_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                               lbdata['ctb_vn_score']['clans'],
-                               type="score")
-    ctb_rx_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                               lbdata['ctb_rx_score']['clans'],
-                               type="score")
-    mania_vn_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['mania_vn_1s']['clans'])
-    mania_vn_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                              lbdata['mania_vn_pp']['clans'],
-                              type="pp")
-    mania_vn_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                                 lbdata['mania_vn_score']['clans'],
-                                 type="score")
-    overall_1s = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                             lbdata['overall_1s']['clans'])
-    overall_pp = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                             lbdata['overall_pp']['clans'],
-                             type="pp")
-    overall_score = find_lb_pos(data['fetches'][-1]['stats']['clan']['id'],
-                                lbdata['overall_ranked_score']['clans'],
-                                type="score")
+    std_vn_1s = find_lb_pos(clan_id, lbdata["std_vn_1s"]["clans"])
+    std_rx_1s = find_lb_pos(clan_id, lbdata["std_rx_1s"]["clans"])
+    std_ap_1s = find_lb_pos(clan_id, lbdata["std_ap_1s"]["clans"])
+    std_vn_pp = find_lb_pos(clan_id, lbdata["std_vn_pp"]["clans"], type="pp")
+    std_rx_pp = find_lb_pos(clan_id, lbdata["std_rx_pp"]["clans"], type="pp")
+    std_ap_pp = find_lb_pos(clan_id, lbdata["std_ap_pp"]["clans"], type="pp")
+    std_vn_score = find_lb_pos(clan_id, lbdata["std_vn_score"]["clans"], type="score")
+    std_rx_score = find_lb_pos(clan_id, lbdata["std_rx_score"]["clans"], type="score")
+    std_ap_score = find_lb_pos(clan_id, lbdata["std_ap_score"]["clans"], type="score")
+    taiko_vn_1s = find_lb_pos(clan_id, lbdata["taiko_vn_1s"]["clans"])
+    taiko_rx_1s = find_lb_pos(clan_id, lbdata["taiko_rx_1s"]["clans"])
+    taiko_vn_pp = find_lb_pos(clan_id, lbdata["taiko_vn_pp"]["clans"], type="pp")
+    taiko_rx_pp = find_lb_pos(clan_id, lbdata["taiko_rx_pp"]["clans"], type="pp")
+    taiko_vn_score = find_lb_pos(
+        clan_id, lbdata["taiko_vn_score"]["clans"], type="score"
+    )
+    taiko_rx_score = find_lb_pos(
+        clan_id, lbdata["taiko_rx_score"]["clans"], type="score"
+    )
+    ctb_vn_1s = find_lb_pos(clan_id, lbdata["ctb_vn_1s"]["clans"])
+    ctb_rx_1s = find_lb_pos(clan_id, lbdata["ctb_rx_1s"]["clans"])
+    ctb_vn_pp = find_lb_pos(clan_id, lbdata["ctb_vn_pp"]["clans"], type="pp")
+    ctb_rx_pp = find_lb_pos(clan_id, lbdata["ctb_rx_pp"]["clans"], type="pp")
+    ctb_vn_score = find_lb_pos(clan_id, lbdata["ctb_vn_score"]["clans"], type="score")
+    ctb_rx_score = find_lb_pos(clan_id, lbdata["ctb_rx_score"]["clans"], type="score")
+    mania_vn_1s = find_lb_pos(clan_id, lbdata["mania_vn_1s"]["clans"])
+    mania_vn_pp = find_lb_pos(clan_id, lbdata["mania_vn_pp"]["clans"], type="pp")
+    mania_vn_score = find_lb_pos(
+        clan_id, lbdata["mania_vn_score"]["clans"], type="score"
+    )
+    overall_1s = find_lb_pos(clan_id, lbdata["overall_1s"]["clans"])
+    overall_pp = find_lb_pos(clan_id, lbdata["overall_pp"]["clans"], type="pp")
+    overall_score = find_lb_pos(
+        clan_id, lbdata["overall_ranked_score"]["clans"], type="score"
+    )
     e.add_field(name="Standard VN #1", value=std_vn_1s)
     e.add_field(name="Standard VN Score", value=std_vn_score)
     e.add_field(name="Standard VN PP", value=std_vn_pp)
@@ -304,8 +269,7 @@ async def show_clan(message: discord.Message, args):
     e.add_field(name="Mania VN Score", value=mania_vn_score)
     e.add_field(name="Mania VN PP", value=mania_vn_pp)
     e.set_footer(
-        text=
-        f"Overall #1: {overall_1s} | Overall Score: {overall_score} | Overall PP: {overall_pp}"
+        text=f"Overall #1: {overall_1s} | Overall Score: {overall_score} | Overall PP: {overall_pp}"
     )
     await message.reply(embed=e)
 
@@ -323,7 +287,8 @@ async def reset(message: discord.Message, args):
         await message.reply("Data resetted.")
     else:
         await message.reply(
-            "You don't have an account linked! Use $link {UserID} first!")
+            "You don't have an account linked! Use $link {UserID} first!"
+        )
 
 
 def get_gain_string(old, new, float=False, swap=False):
@@ -336,9 +301,9 @@ def get_gain_string(old, new, float=False, swap=False):
     if old == new:
         return ""
     if old > new:
-        return f'({new-old:,.2f})' if float else f'({new-old:,})'
+        return f"({new-old:,.2f})" if float else f"({new-old:,})"
     else:
-        return f'(+{new-old:,.2f})' if float else f'(+{new-old:,})'
+        return f"(+{new-old:,.2f})" if float else f"(+{new-old:,})"
 
 
 async def verify_mode_string(message, arg):
@@ -350,11 +315,12 @@ async def verify_mode_string(message, arg):
         "taikorx": ("taiko", 1),
         "ctb": ("ctb", 0),
         "ctbrx": ("ctb", 1),
-        "mania": ("mania", 0)
+        "mania": ("mania", 0),
     }
     if arg.lower() not in modes:
         await message.reply(
-            "Invalid gamemode! Use (std(rx/ap),taiko(rx),ctb(rx),mania)")
+            "Invalid gamemode! Use (std(rx/ap),taiko(rx),ctb(rx),mania)"
+        )
         return None, None
     return modes[arg.lower()]
 
@@ -365,28 +331,28 @@ async def update_fetches(file):
     fetches = list()
     update = False
     for fetch in data["fetches"]:
-        time = datetime.datetime.strptime(fetch["time"], '%d/%m/%Y %H:%M:%S')
+        time = datetime.datetime.strptime(fetch["time"], "%d/%m/%Y %H:%M:%S")
         if (datetime.datetime.now() - time).days > 0:
             update = True
             continue
         fetches.append(fetch)
     if len(fetches) == 0:
-        fetches.append({
-            'stats':
-            akatsuki.grab_stats(data["userid"]),
-            'time':
-            datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-        })
+        fetches.append(
+            {
+                "stats": akatsuki.grab_stats(data["userid"]),
+                "time": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            }
+        )
         update = True
     else:
         update = True
         if (datetime.datetime.now() - time) > datetime.timedelta(minutes=5):
-            fetches.append({
-                'stats':
-                akatsuki.grab_stats(data["userid"]),
-                'time':
-                datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S'),
-            })
+            fetches.append(
+                {
+                    "stats": akatsuki.grab_stats(data["userid"]),
+                    "time": datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                }
+            )
     if update:
         data["fetches"] = fetches
         with open(file, "w") as f:
