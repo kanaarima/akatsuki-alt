@@ -24,9 +24,9 @@ async def on_ready():
 
 @client.event
 async def on_message(message: discord.Message):
-    thread.sleeping = False
     if message.author == client.user:
         return
+    thread.sleeping = False
     args = message.content.split(" ")
     try:
         if message.content.startswith("$link"):
