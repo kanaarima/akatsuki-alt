@@ -14,38 +14,14 @@ thread = None
 
 def get_data_pp():
     data = dict()
-    data["std_vn_pp"] = akat.grab_clan_ranking(mode=0,
-                                               relax=0,
-                                               pages=4,
-                                               pp=True)
-    data["std_rx_pp"] = akat.grab_clan_ranking(mode=0,
-                                               relax=1,
-                                               pages=4,
-                                               pp=True)
-    data["std_ap_pp"] = akat.grab_clan_ranking(mode=0,
-                                               relax=2,
-                                               pages=4,
-                                               pp=True)
-    data["taiko_vn_pp"] = akat.grab_clan_ranking(mode=1,
-                                                 relax=0,
-                                                 pages=4,
-                                                 pp=True)
-    data["taiko_rx_pp"] = akat.grab_clan_ranking(mode=1,
-                                                 relax=1,
-                                                 pages=4,
-                                                 pp=True)
-    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2,
-                                               relax=0,
-                                               pages=4,
-                                               pp=True)
-    data["ctb_rx_pp"] = akat.grab_clan_ranking(mode=2,
-                                               relax=1,
-                                               pages=4,
-                                               pp=True)
-    data["mania_vn_pp"] = akat.grab_clan_ranking(mode=3,
-                                                 relax=0,
-                                                 pages=4,
-                                                 pp=True)
+    data["std_vn_pp"] = akat.grab_clan_ranking(mode=0, relax=0, pages=4, pp=True)
+    data["std_rx_pp"] = akat.grab_clan_ranking(mode=0, relax=1, pages=4, pp=True)
+    data["std_ap_pp"] = akat.grab_clan_ranking(mode=0, relax=2, pages=4, pp=True)
+    data["taiko_vn_pp"] = akat.grab_clan_ranking(mode=1, relax=0, pages=4, pp=True)
+    data["taiko_rx_pp"] = akat.grab_clan_ranking(mode=1, relax=1, pages=4, pp=True)
+    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2, relax=0, pages=4, pp=True)
+    data["ctb_rx_pp"] = akat.grab_clan_ranking(mode=2, relax=1, pages=4, pp=True)
+    data["mania_vn_pp"] = akat.grab_clan_ranking(mode=3, relax=0, pages=4, pp=True)
     data["overall_pp"] = {"clans": get_overall_pp(data)}
     return data
 
@@ -228,8 +204,7 @@ def track_clan_leaderboards(secrets):
         try:
             thread.sleeping = False
             today = date.today()
-            yesterday = (datetime.datetime.today() -
-                         datetime.timedelta(days=1)).date()
+            yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
             filename = f"data/clan_lb/{today}.json"
             olddata = None
             if os.path.exists(filename):
@@ -262,10 +237,12 @@ def track_clan_leaderboards(secrets):
                                 count_gain = clan["count"] - clanold["count"]
                                 rank_gain = rankold - rank
                     clan_list.append(
-                        format_1s_string(clan, rank, rank_gain, count_gain))
+                        format_1s_string(clan, rank, rank_gain, count_gain)
+                    )
                 if key in secrets:
-                    wh.send_string_list(URL, secrets[key], f"{today} changes",
-                                        clan_list)
+                    wh.send_string_list(
+                        URL, secrets[key], f"{today} changes", clan_list
+                    )
             for key in data_pp.keys():
                 clan_list = list()
                 rank = 0
@@ -280,14 +257,18 @@ def track_clan_leaderboards(secrets):
                         for clanold in olddata[key]["clans"]:
                             rankold += 1
                             if clanold["id"] == clan["id"]:
-                                count_gain = clan["chosen_mode"][
-                                    "pp"] - clanold["chosen_mode"]["pp"]
+                                count_gain = (
+                                    clan["chosen_mode"]["pp"]
+                                    - clanold["chosen_mode"]["pp"]
+                                )
                                 rank_gain = rankold - rank
                     clan_list.append(
-                        format_pp_string(clan, rank, rank_gain, count_gain))
+                        format_pp_string(clan, rank, rank_gain, count_gain)
+                    )
                 if key in secrets:
-                    wh.send_string_list(URL, secrets[key], f"{today} changes",
-                                        clan_list)
+                    wh.send_string_list(
+                        URL, secrets[key], f"{today} changes", clan_list
+                    )
             for key in ranked_score.keys():
                 clan_list = list()
                 rank = 0
@@ -300,19 +281,25 @@ def track_clan_leaderboards(secrets):
                         for clanold in olddata[key]["clans"]:
                             rankold += 1
                             if clanold["id"] == clan["id"]:
-                                count_gain = clan["chosen_mode"][
-                                    "ranked_score"] - clanold["chosen_mode"][
-                                        "ranked_score"]
+                                count_gain = (
+                                    clan["chosen_mode"]["ranked_score"]
+                                    - clanold["chosen_mode"]["ranked_score"]
+                                )
                                 rank_gain = rankold - rank
                     clan_list.append(
-                        format_score_string(clan, rank, rank_gain, count_gain))
+                        format_score_string(clan, rank, rank_gain, count_gain)
+                    )
                 if key in secrets:
-                    wh.send_string_list(URL, secrets[key], f"{today} changes",
-                                        clan_list)
+                    wh.send_string_list(
+                        URL, secrets[key], f"{today} changes", clan_list
+                    )
         except Exception as e:
             print(e)
             if "error_channel" in secrets:
                 wh.send_string_list(
-                    URL, secrets["error_channel"], f"Error in {__name__}",
-                    (e.__class__.__name__, str(e), traceback.format_exc()))
+                    URL,
+                    secrets["error_channel"],
+                    f"Error in {__name__}",
+                    (e.__class__.__name__, str(e), traceback.format_exc()),
+                )
             time.sleep(10)

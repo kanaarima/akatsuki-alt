@@ -15,8 +15,7 @@ def user_stats_tracker(secrets):
         try:
             thread.sleeping = False
             files = glob.glob("data/trackerbot/*.json")
-            yesterday = (datetime.datetime.today() -
-                         datetime.timedelta(days=1)).date()
+            yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
             dir = f"data/user_stats/{yesterday}"
             if os.path.exists(dir):
                 thread.sleeping = True
@@ -26,7 +25,7 @@ def user_stats_tracker(secrets):
             for file in files:
                 with open(file) as f:
                     data = json.load(f)
-                fetch = akatsuki.grab_stats(data['userid'])
+                fetch = akatsuki.grab_stats(data["userid"])
                 with open(f"{dir}/{data['userid']}.json", "w") as f:
                     json.dump(fetch, f)
                 time.sleep(1)
@@ -35,6 +34,8 @@ def user_stats_tracker(secrets):
             if "error_channel" in secrets:
                 wh.send_string_list(
                     f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message',
-                    secrets["error_channel"], f"Error in {__name__}",
-                    (e.__class__.__name__, str(e), traceback.format_exc()))
+                    secrets["error_channel"],
+                    f"Error in {__name__}",
+                    (e.__class__.__name__, str(e), traceback.format_exc()),
+                )
             time.sleep(10)

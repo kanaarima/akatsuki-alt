@@ -5,13 +5,12 @@ import time
 scorelb = dict()
 last_fetch = None
 lock = False
-modes = {'std': 0, 'taiko': 1, 'ctb': 2, 'mania': 3}
+modes = {"std": 0, "taiko": 1, "ctb": 2, "mania": 3}
 
 
 def grab_stats(userid):
     update_scorelb()
-    req = requests.get(
-        f"https://akatsuki.gg/api/v1/users/full?id={userid}&relax=-1")
+    req = requests.get(f"https://akatsuki.gg/api/v1/users/full?id={userid}&relax=-1")
     if req.status_code != 200 and req.status_code < 500:  # ignore code 500
         raise ApiException(f"Error code {req.status_code}")
     data = req.json()
@@ -19,14 +18,14 @@ def grab_stats(userid):
     for dikt in scorelb:
         for key in dikt.keys():
             global_score, country_score = get_score_rank(
-                userid, key, rx, data['country'])
-            count_1s = grab_user_1s(userid=userid,
-                                    mode=modes[key],
-                                    relax=rx,
-                                    length=1)['total']
-            data['stats'][rx][key]['count_1s'] = count_1s
-            data['stats'][rx][key]['global_rank_score'] = global_score
-            data['stats'][rx][key]['country_rank_score'] = country_score
+                userid, key, rx, data["country"]
+            )
+            count_1s = grab_user_1s(userid=userid, mode=modes[key], relax=rx, length=1)[
+                "total"
+            ]
+            data["stats"][rx][key]["count_1s"] = count_1s
+            data["stats"][rx][key]["global_rank_score"] = global_score
+            data["stats"][rx][key]["country_rank_score"] = country_score
         rx += 1
     return data
 
@@ -43,8 +42,7 @@ def grab_clan_ranking(mode=0, relax=0, page=1, pages=1, pp=False):
     if pages > 1:
         req = grab_clan_ranking(mode, relax, 1, 1, pp)
         for p in range(2, pages + 1):
-            req["clans"].extend(
-                grab_clan_ranking(mode, relax, p, 1, pp)["clans"])
+            req["clans"].extend(grab_clan_ranking(mode, relax, p, 1, pp)["clans"])
         return req
     handle_api_throttling()
     if pp:
@@ -90,13 +88,12 @@ def grab_all_clan_stats_avg(clan_id):
         "total_score": 0,
         "replay_watched": 0,
         "total_hits": 0,
-        "pp": 0
+        "pp": 0,
     }
     for req in reqs:
         stats["ranked_score"] += req["clan"]["chosen_mode"]["ranked_score"]
         stats["total_score"] += req["clan"]["chosen_mode"]["total_score"]
-        stats["replay_watched"] += req["clan"]["chosen_mode"][
-            "replays_watched"]
+        stats["replay_watched"] += req["clan"]["chosen_mode"]["replays_watched"]
         stats["total_hits"] += req["clan"]["chosen_mode"]["total_hits"]
         stats["pp"] += req["clan"]["chosen_mode"]["pp"]
     stats["pp"] /= 8
@@ -128,10 +125,10 @@ def get_score_rank(userid, mode, relax, country):
     global_rank = 1
     country_rank = 1
     for user in scorelb[relax][mode]:
-        if user['id'] == userid:
+        if user["id"] == userid:
             return global_rank, country_rank
         global_rank += 1
-        if user['country'] == country:
+        if user["country"] == country:
             country_rank += 1
     return 0, 0
 
@@ -141,21 +138,15 @@ def update_scorelb():
     while lock:
         time.sleep(1)
     lock = True
-    if not last_fetch or (datetime.datetime.now() -
-                          last_fetch) > datetime.timedelta(minutes=30):
+    if not last_fetch or (datetime.datetime.now() - last_fetch) > datetime.timedelta(
+        minutes=30
+    ):
         last_fetch = datetime.datetime.now()
-        scorelb = [{
-            'std': list(),
-            'taiko': list(),
-            'ctb': list(),
-            'mania': list()
-        }, {
-            'std': list(),
-            'taiko': list(),
-            'ctb': list()
-        }, {
-            'std': list()
-        }]
+        scorelb = [
+            {"std": list(), "taiko": list(), "ctb": list(), "mania": list()},
+            {"std": list(), "taiko": list(), "ctb": list()},
+            {"std": list()},
+        ]
         scorelb[0]["std"] = grab_score_leaderboards(mode=0, relax=0)["users"]
         scorelb[1]["std"] = grab_score_leaderboards(mode=0, relax=1)["users"]
         scorelb[2]["std"] = grab_score_leaderboards(mode=0, relax=2)["users"]
@@ -166,9 +157,11 @@ def update_scorelb():
         scorelb[0]["mania"] = grab_score_leaderboards(mode=3, relax=0)["users"]
         for i in range(2, 4 + 1):
             scorelb[0]["std"].extend(
-                grab_score_leaderboards(mode=0, relax=0, page=i)["users"])
+                grab_score_leaderboards(mode=0, relax=0, page=i)["users"]
+            )
             scorelb[1]["std"].extend(
-                grab_score_leaderboards(mode=0, relax=1, page=i)["users"])
+                grab_score_leaderboards(mode=0, relax=1, page=i)["users"]
+            )
 
     lock = False
 
