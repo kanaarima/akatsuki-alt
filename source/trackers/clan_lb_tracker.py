@@ -16,12 +16,12 @@ def get_data_pp():
     data = dict()
     data["std_vn_pp"] = akat.grab_clan_ranking(mode=0, relax=0, pages=4, pp=True)
     data["std_rx_pp"] = akat.grab_clan_ranking(mode=0, relax=1, pages=4, pp=True)
-    data["std_ap_pp"] = akat.grab_clan_ranking(mode=0, relax=2, pages=4, pp=True)
-    data["taiko_vn_pp"] = akat.grab_clan_ranking(mode=1, relax=0, pages=4, pp=True)
-    data["taiko_rx_pp"] = akat.grab_clan_ranking(mode=1, relax=1, pages=4, pp=True)
-    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2, relax=0, pages=4, pp=True)
-    data["ctb_rx_pp"] = akat.grab_clan_ranking(mode=2, relax=1, pages=4, pp=True)
-    data["mania_vn_pp"] = akat.grab_clan_ranking(mode=3, relax=0, pages=4, pp=True)
+    data["std_ap_pp"] = akat.grab_clan_ranking(mode=0, relax=2, pages=10, pp=True)
+    data["taiko_vn_pp"] = akat.grab_clan_ranking(mode=1, relax=0, pages=2, pp=True)
+    data["taiko_rx_pp"] = akat.grab_clan_ranking(mode=1, relax=1, pages=1, pp=True)
+    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2, relax=0, pages=2, pp=True)
+    data["ctb_rx_pp"] = akat.grab_clan_ranking(mode=2, relax=1, pages=2, pp=True)
+    data["mania_vn_pp"] = akat.grab_clan_ranking(mode=3, relax=0, pages=10, pp=True)
     data["overall_pp"] = {"clans": get_overall_pp(data)}
     return data
 
@@ -70,7 +70,7 @@ def get_overall_1s(data):
         clan = copy.deepcopy(clans_metadata[k])
         clan["count"] = v
         res.append(clan)
-    return res[:100]
+    return res[:200]
 
 
 def get_overall_ranked_score(data_pp):
@@ -89,7 +89,7 @@ def get_overall_ranked_score(data_pp):
         clan = copy.deepcopy(clans_metadata[k])
         clan["chosen_mode"]["ranked_score"] = v
         res.append(clan)
-    return {"clans": res[:100]}
+    return {"clans": res[:200]}
 
 
 def get_ranked_score(data_pp):
@@ -107,7 +107,7 @@ def get_ranked_score(data_pp):
         clan = copy.deepcopy(clans_metadata[k])
         clan["chosen_mode"]["ranked_score"] = v
         res.append(clan)
-    return {"clans": res[:100]}
+    return {"clans": res[:200]}
 
 
 def get_overall_pp(data):
@@ -126,7 +126,7 @@ def get_overall_pp(data):
         clan = copy.deepcopy(clans_metadata[k])
         clan["chosen_mode"]["pp"] = v / 8
         res.append(clan)
-    return res[:100]
+    return res[:200]
 
 
 def format_1s_string(clan, rank, rank_gain, count_gain):
@@ -272,7 +272,7 @@ def track_clan_leaderboards(secrets):
             for key in ranked_score.keys():
                 clan_list = list()
                 rank = 0
-                for clan in ranked_score[key]["clans"]:
+                for clan in ranked_score[key]["clans"][:100]:
                     rank += 1
                     rank_gain = 0
                     count_gain = 0
