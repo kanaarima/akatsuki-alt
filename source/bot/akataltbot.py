@@ -170,20 +170,29 @@ async def show(message: discord.Message, args):
 
 
 async def show_clan(message: discord.Message, args):
-    if not os.path.exists(f"data/trackerbot/{message.author.id}.json"):
+    clan_id = None
+    clan_name = None
+    if len(args) > 1:
+        for arg in args:
+            subargs = arg.split("=")
+            if len(subargs) == 2:
+                if subargs[0].lower() == "clan" and subargs[1].isnumeric():
+                    clan_id = int(subargs[1])
+                    clan_name = clan_id
+    if not os.path.exists(f"data/trackerbot/{message.author.id}.json") and not clan_id:
         await message.reply(
-            "You don't have an account linked! Use $link {UserID} first!"
+            "You don't have an account linked! Use $link {UserID} first or use clan=clanid!"
         )
         return
-    data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
-    if not data["fetches"][-1]["stats"]["clan"]["id"]:
-        await message.reply("You haven't join any clan!")
-        return
-    clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
-    e = discord.Embed(
-        colour=discord.Color.og_blurple(),
-        title=f'Stats for {data["fetches"][-1]["stats"]["clan"]["name"]}',
-    )
+    if not clan_id:
+        data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
+        if not data["fetches"][-1]["stats"]["clan"]["id"]:
+            await message.reply(
+                "You haven't join any clan! Join one or use clan=clanid!"
+            )
+            return
+        clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
+        clan_name = data["fetches"][-1]["stats"]["clan"]["name"]
     today = datetime.date.today()
     filename = f"data/clan_lb/{today}.json"
     if not os.path.exists(filename):
@@ -193,7 +202,11 @@ async def show_clan(message: discord.Message, args):
         return
     with open(filename) as f:
         lbdata = json.load(f)
-
+    if clan_id == clan_name:
+        for x in lbdata["std_rx_1s"]["clans"]:
+            if x['clan'] == clan_id:
+                clan_name = x['name']
+                break
     def find_lb_pos(clan_id, data, type=""):
         i = 1
         for x in data:
@@ -243,6 +256,10 @@ async def show_clan(message: discord.Message, args):
     overall_pp = find_lb_pos(clan_id, lbdata["overall_pp"]["clans"], type="pp")
     overall_score = find_lb_pos(
         clan_id, lbdata["overall_ranked_score"]["clans"], type="score"
+    )
+    e = discord.Embed(
+        colour=discord.Color.og_blurple(),
+        title=f"Stats for {clan_name}",
     )
     e.add_field(name="Standard VN #1", value=std_vn_1s)
     e.add_field(name="Standard VN Score", value=std_vn_score)
