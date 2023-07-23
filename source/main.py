@@ -1,5 +1,6 @@
 from api.threads import WThread as Thread
 import trackers.clan_lb_tracker as clan_lb_tracker
+import trackers.user_stats_tracker as user_stats_tracker
 import api.flask2discord as flask2discord
 import bot.akataltbot as akataltbot
 #from threading import Thread
@@ -10,11 +11,13 @@ import sys
 
 stop = False
 function_list = (clan_lb_tracker.track_clan_leaderboards,
-                 flask2discord.flask2discord, akataltbot.akataltbot)
+                 flask2discord.flask2discord, akataltbot.akataltbot,
+                 user_stats_tracker.user_stats_tracker)
 function_class = {
     clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker,
     flask2discord.flask2discord: flask2discord,
-    akataltbot.akataltbot: akataltbot
+    akataltbot.akataltbot: akataltbot,
+    user_stats_tracker.user_stats_tracker: user_stats_tracker
 }  # No reflections
 
 
