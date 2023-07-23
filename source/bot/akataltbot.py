@@ -106,20 +106,39 @@ async def link(message: discord.Message, args):
 
 
 async def show(message: discord.Message, args):
-    if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
-        data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
+    userid = None
+    if len(args) > 1:
+        for arg in args:
+            subargs = arg.split("=")
+            if len(subargs) == 2:
+                if subargs[0].lower() == "user" and subargs[1].isnumeric():
+                    userid = int(subargs[1])
+    if os.path.exists(f"data/trackerbot/{message.author.id}.json") or userid:
+        if userid:
+            data = akatsuki.grab_stats(userid)
+            username = data["username"]
+            rx = 0
+            mode = "std"
+        else:
+            data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
+            username = data["fetches"][0]["stats"]["username"]
+            rx = data["defaultrelax"]
+            mode = data["defaultmode"]
         e = discord.Embed(
             colour=discord.Color.og_blurple(),
-            title=f'Stats for {data["fetches"][0]["stats"]["username"]}',
+            title=f"Stats for {username}",
         )
-        rx = data["defaultrelax"]
-        mode = data["defaultmode"]
         if len(args) > 1:
-            mode, rx = await verify_mode_string(message, args[1])
-            if not mode:
-                return
-        oldest = data["fetches"][0]["stats"]["stats"][rx][mode]
-        latest = data["fetches"][-1]["stats"]["stats"][rx][mode]
+            if not len(args[1].split("=")) == 2:
+                mode, rx = await verify_mode_string(message, args[1])
+                if not mode:
+                    return
+        if userid:
+            oldest = data["stats"][rx][mode]
+            latest = data["stats"][rx][mode]
+        else:
+            oldest = data["fetches"][0]["stats"]["stats"][rx][mode]
+            latest = data["fetches"][-1]["stats"]["stats"][rx][mode]
         ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
         total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
         total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"
@@ -152,16 +171,20 @@ async def show(message: discord.Message, args):
         e.add_field(name=f"Global score rank", value=global_score_rank)
         e.add_field(name=f"Country score rank", value=country_score_rank)
         e.add_field(name=f"#1 Count", value=count_1s)
-        e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
-        timeold = datetime.datetime.strptime(
-            data["fetches"][0]["time"], "%d/%m/%Y %H:%M:%S"
-        )
-        timenew = datetime.datetime.strptime(
-            data["fetches"][-1]["time"], "%d/%m/%Y %H:%M:%S"
-        )
-        e.set_footer(
-            text=f"Comparing to {timeold} (UTC+2). Last fetch: {timenew}. Use $reset to clear."
-        )
+        if userid:
+            e.set_thumbnail(url=f"https://a.akatsuki.gg/{userid}")
+        else:
+            e.set_thumbnail(url=f"https://a.akatsuki.gg/{data['userid']}")
+        if not userid:
+            timeold = datetime.datetime.strptime(
+                data["fetches"][0]["time"], "%d/%m/%Y %H:%M:%S"
+            )
+            timenew = datetime.datetime.strptime(
+                data["fetches"][-1]["time"], "%d/%m/%Y %H:%M:%S"
+            )
+            e.set_footer(
+                text=f"Comparing to {timeold} (UTC+2). Last fetch: {timenew}. Use $reset to clear."
+            )
         await message.reply(embed=e)
     else:
         await message.reply(
@@ -204,9 +227,10 @@ async def show_clan(message: discord.Message, args):
         lbdata = json.load(f)
     if clan_id == clan_name:
         for x in lbdata["std_rx_1s"]["clans"]:
-            if x['clan'] == clan_id:
-                clan_name = x['name']
+            if x["clan"] == clan_id:
+                clan_name = x["name"]
                 break
+
     def find_lb_pos(clan_id, data, type=""):
         i = 1
         for x in data:
