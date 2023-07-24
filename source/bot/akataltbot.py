@@ -4,6 +4,7 @@ import api.akatsuki as akatsuki
 import traceback
 import datetime
 import discord
+import glob
 import json
 import time
 import os
@@ -39,6 +40,8 @@ async def on_message(message: discord.Message):
             await show(message, args)
         elif message.content.startswith(f"{bot_prefix}reset"):
             await reset(message, args)
+        elif message.content.startswith(f"{bot_prefix}info"):
+            await info(message, args)
     except Exception as e:
         print(repr(e))
         print(traceback.format_exc())
@@ -107,12 +110,18 @@ async def link(message: discord.Message, args):
 
 async def show(message: discord.Message, args):
     userid = None
+    compareto = None
     if len(args) > 1:
         for arg in args:
             subargs = arg.split("=")
             if len(subargs) == 2:
                 if subargs[0].lower() == "user" and subargs[1].isnumeric():
                     userid = int(subargs[1])
+                elif subargs[0].lower() == "compareto":
+                    compareto = subargs[1].replace(".", "").replace("/", "")
+    if userid and compareto:
+        await message.reply("Can't compare to old data with a custom userID!")
+        return
     if os.path.exists(f"data/trackerbot/{message.author.id}.json") or userid:
         if userid:
             data = akatsuki.grab_stats(userid)
@@ -124,6 +133,13 @@ async def show(message: discord.Message, args):
             username = data["fetches"][0]["stats"]["username"]
             rx = data["defaultrelax"]
             mode = data["defaultmode"]
+            if compareto:
+                files = glob.glob(f"data/user_stats/{compareto}/{data['userid']}.json")
+                if not files:
+                    await message.reply(
+                        "You don't have stats recorded for that day! use $info to check your data."
+                    )
+                    return
         e = discord.Embed(
             colour=discord.Color.og_blurple(),
             title=f"Stats for {username}",
@@ -139,6 +155,9 @@ async def show(message: discord.Message, args):
         else:
             oldest = data["fetches"][0]["stats"]["stats"][rx][mode]
             latest = data["fetches"][-1]["stats"]["stats"][rx][mode]
+            if compareto:
+                with open(files[0]) as f:
+                    oldest = json.load(f)["stats"][rx][mode]
         ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
         total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
         total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"
@@ -313,6 +332,23 @@ async def show_clan(message: discord.Message, args):
         text=f"Overall #1: {overall_1s} | Overall Score: {overall_score} | Overall PP: {overall_pp}"
     )
     await message.reply(embed=e)
+
+
+async def info(message: discord.Message, args):
+    if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
+        with open(f"data/trackerbot/{message.author.id}.json") as f:
+            data = json.load(f)
+            userid = data["userid"]
+            files = glob.glob(f"data/user_stats/*/{userid}.json")
+            msg = "```Your data:\nUser stats recorded: "
+            for file in files:
+                msg += f"{file.split('/')[2]} "
+            msg += "```"
+            await message.reply(msg)
+    else:
+        await message.reply(
+            "You don't have an account linked! Use $link {UserID} first!"
+        )
 
 
 async def reset(message: discord.Message, args):
