@@ -19,7 +19,7 @@ def get_data_pp():
     data["std_ap_pp"] = akat.grab_clan_ranking(mode=0, relax=2, pages=10, pp=True)
     data["taiko_vn_pp"] = akat.grab_clan_ranking(mode=1, relax=0, pages=2, pp=True)
     data["taiko_rx_pp"] = akat.grab_clan_ranking(mode=1, relax=1, pages=1, pp=True)
-    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2, relax=0, pages=2, pp=True)
+    data["ctb_vn_pp"] = akat.grab_clan_ranking(mode=2, relax=0, pages=4, pp=True)
     data["ctb_rx_pp"] = akat.grab_clan_ranking(mode=2, relax=1, pages=2, pp=True)
     data["mania_vn_pp"] = akat.grab_clan_ranking(mode=3, relax=0, pages=10, pp=True)
     data["overall_pp"] = {"clans": get_overall_pp(data)}
