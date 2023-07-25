@@ -235,8 +235,8 @@ async def show_clan(message: discord.Message, args):
             return
         clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
         clan_name = data["fetches"][-1]["stats"]["clan"]["name"]
-    today = datetime.date.today()
-    filename = f"data/clan_lb/{today}.json"
+    date = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+    filename = f"data/clan_lb/{date}.json"
     if not os.path.exists(filename):
         await message.reply(
             "Leaderboard data is still being generated. Please wait a few minutes."
