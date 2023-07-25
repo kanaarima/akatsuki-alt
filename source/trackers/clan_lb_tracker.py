@@ -203,8 +203,8 @@ def track_clan_leaderboards(secrets):
     while True:
         try:
             thread.sleeping = False
-            today = date.today()
-            yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+            today = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+            yesterday = (datetime.datetime.today() - datetime.timedelta(days=2)).date()
             filename = f"data/clan_lb/{today}.json"
             olddata = None
             if os.path.exists(filename):
