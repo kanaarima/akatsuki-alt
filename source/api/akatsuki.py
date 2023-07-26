@@ -170,5 +170,119 @@ def handle_api_throttling():
     time.sleep(0.7)
 
 
+def grab_clan_ranking_all(pages, pp):
+    data = dict()
+    data["std_vn"] = grab_clan_ranking(mode=0, relax=0, pages=pages, pp=pp)
+    data["std_rx"] = grab_clan_ranking(mode=0, relax=1, pages=pages, pp=pp)
+    data["std_ap"] = grab_clan_ranking(mode=0, relax=2, pages=pages, pp=pp)
+    data["taiko_vn"] = grab_clan_ranking(mode=1, relax=0, pages=pages, pp=pp)
+    data["taiko_rx"] = grab_clan_ranking(mode=1, relax=1, pages=pages, pp=pp)
+    data["ctb_vn"] = grab_clan_ranking(mode=2, relax=0, pages=pages, pp=pp)
+    data["ctb_rx"] = grab_clan_ranking(mode=2, relax=1, pages=pages, pp=pp)
+    data["mania_vn"] = grab_clan_ranking(mode=3, relax=0, pages=pages, pp=pp)
+    return data
+
+
+def _blank_clan():
+    return {"name": "", "tag": "", "id": 0, "statistics": {}}
+
+
+def _blank_stats():
+    return {
+        "performance_points": 0,
+        "accuracy": 0,
+        "ranked_score": 0,
+        "total_score": 0,
+        "play_count": 0,
+        "first_places": 0,
+        "pp_rank": 0,
+        "score_rank": 0,
+        "1s_rank": 0,
+    }
+
+
+def _addition_dict(target: dict, source: dict):
+    for key in source.keys():
+        if key in target:
+            target[key] += source[key]
+
+
+def fetch_clan_data():
+    table = {}
+    pp = grab_clan_ranking_all(pages=8, pp=True)
+    firstplaces = grab_clan_ranking_all(pages=2, pp=False)
+    for key in pp.keys():
+        for api_clan in pp[key]["clans"]:
+            if api_clan["id"] not in table:
+                clan = table[api_clan["id"]] = _blank_clan()
+                clan["name"] = api_clan["name"]
+                clan["id"] = api_clan["id"]
+            else:
+                clan = table[api_clan["id"]]
+            stats = _blank_stats()
+            stats["ranked_score"] = api_clan["chosen_mode"]["ranked_score"]
+            stats["total_score"] = api_clan["chosen_mode"]["total_score"]
+            stats["play_count"] = api_clan["chosen_mode"]["playcount"]
+            stats["accuracy"] = api_clan["chosen_mode"]["accuracy"]
+            stats["performance_points"] = api_clan["chosen_mode"]["pp"]
+            stats["pp_rank"] = api_clan["chosen_mode"]["global_leaderboard_rank"]
+            clan["statistics"][key] = stats
+    for key in firstplaces.keys():
+        rank = 1
+        for api_clan in firstplaces[key]["clans"]:
+            if api_clan["clan"] not in table:  # clan == id for some reason
+                clan = table[api_clan["clan"]] = _blank_clan()
+                clan["name"] = api_clan["name"]
+                clan["id"] = api_clan["clan"]
+            else:
+                clan = table[api_clan["clan"]]
+            # For some reason there isn't tag info on pp clan leaderboards
+            clan["tag"] = api_clan["tag"]
+            if key in clan["statistics"]:
+                stats = clan["statistics"][key]
+            else:
+                stats = clan["statistics"][key] = _blank_stats()
+            stats["first_places"] = api_clan["count"]
+            stats["1s_rank"] = rank
+            rank += 1
+    for clan in table.values():
+        stats = _blank_stats()
+        for key in clan["statistics"]:
+            _addition_dict(stats, clan["statistics"][key])
+        stats["performance_points"] /= 8
+        stats["accuracy"] /= 8
+        clan["statistics"]["overall"] = stats
+    keys = [
+        "std_vn",
+        "std_rx",
+        "std_ap",
+        "taiko_vn",
+        "taiko_rx",
+        "ctb_vn",
+        "ctb_rx",
+        "mania_vn",
+        "overall",
+    ]
+
+    def set_rank(statistics_key, rank_key):
+        for key in keys:
+            cl = list()
+            for clan in table.values():
+                if not key in clan["statistics"]:
+                    continue
+                cl.append((clan["id"], clan["statistics"][key][statistics_key]))
+                cl.sort(key=lambda x: x[1], reverse=True)
+                rank = 1
+                for x in cl:
+                    table[x[0]]["statistics"][key][rank_key] = rank
+                    rank += 1
+
+    set_rank("ranked_score", "score_rank")
+    set_rank("performance_points", "pp_rank")
+
+    # Probably theres a better way to do this but this works
+    return sorted(list(table.values()), key=lambda x: x["id"])
+
+
 class ApiException(Exception):
     pass
