@@ -1,5 +1,5 @@
 import api.akatsuki as akatsuki
-import api.webhook as wh
+import api.utils as utils
 import traceback
 import datetime
 import json
@@ -32,7 +32,7 @@ def user_stats_tracker(secrets):
         except Exception as e:
             print(e)
             if "error_channel" in secrets:
-                wh.send_string_list(
+                utils.send_string_list(
                     f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message',
                     secrets["error_channel"],
                     f"Error in {__name__}",

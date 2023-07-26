@@ -1,10 +1,11 @@
 import requests
 import datetime
 import time
+import api.utils as utils
 
 scorelb = dict()
 last_fetch = None
-lock = False
+scorelb_lock = utils.SimpleLock()
 modes = {"std": 0, "taiko": 1, "ctb": 2, "mania": 3}
 
 
@@ -134,10 +135,9 @@ def get_score_rank(userid, mode, relax, country):
 
 
 def update_scorelb():
-    global lock, last_fetch, scorelb
-    while lock:
-        time.sleep(1)
-    lock = True
+    global last_fetch, scorelb
+    scorelb_lock.wait()
+    scorelb_lock.block()
     if not last_fetch or (datetime.datetime.now() - last_fetch) > datetime.timedelta(
         minutes=30
     ):
@@ -163,7 +163,7 @@ def update_scorelb():
                 grab_score_leaderboards(mode=0, relax=1, page=i)["users"]
             )
 
-    lock = False
+    scorelb_lock.unblock()
 
 
 def handle_api_throttling():

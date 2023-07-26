@@ -1,6 +1,5 @@
 import api.akatsuki as akat
-import api.webhook as wh
-from datetime import date
+import api.utils as utils
 import unicodedata
 import traceback
 import datetime
@@ -240,7 +239,7 @@ def track_clan_leaderboards(secrets):
                         format_1s_string(clan, rank, rank_gain, count_gain)
                     )
                 if key in secrets:
-                    wh.send_string_list(
+                    utils.send_string_list(
                         URL, secrets[key], f"{today} changes", clan_list
                     )
             for key in data_pp.keys():
@@ -266,7 +265,7 @@ def track_clan_leaderboards(secrets):
                         format_pp_string(clan, rank, rank_gain, count_gain)
                     )
                 if key in secrets:
-                    wh.send_string_list(
+                    utils.send_string_list(
                         URL, secrets[key], f"{today} changes", clan_list
                     )
             for key in ranked_score.keys():
@@ -290,13 +289,13 @@ def track_clan_leaderboards(secrets):
                         format_score_string(clan, rank, rank_gain, count_gain)
                     )
                 if key in secrets:
-                    wh.send_string_list(
+                    utils.send_string_list(
                         URL, secrets[key], f"{today} changes", clan_list
                     )
         except Exception as e:
             print(e)
             if "error_channel" in secrets:
-                wh.send_string_list(
+                utils.send_string_list(
                     URL,
                     secrets["error_channel"],
                     f"Error in {__name__}",

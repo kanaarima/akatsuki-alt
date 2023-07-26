@@ -1,4 +1,4 @@
-from api.threads import WThread as Thread
+from api.utils import WThread as Thread
 import trackers.clan_lb_tracker as clan_lb_tracker
 import trackers.user_stats_tracker as user_stats_tracker
 import api.flask2discord as flask2discord
