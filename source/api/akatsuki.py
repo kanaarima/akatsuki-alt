@@ -279,6 +279,7 @@ def fetch_clan_data():
 
     set_rank("ranked_score", "score_rank")
     set_rank("performance_points", "pp_rank")
+    set_rank("first_places", "1s_rank")
 
     # Probably theres a better way to do this but this works
     return sorted(list(table.values()), key=lambda x: x["id"])
