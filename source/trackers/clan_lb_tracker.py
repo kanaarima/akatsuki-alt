@@ -94,7 +94,10 @@ def track_clan_leaderboards(secrets):
                     for clan in get_leaderboard(data, lb_key, rank_key, 100):
                         rank_gain = 0
                         count_gain = 0
-                        if clan["id"] in table:
+                        if (
+                            clan["id"] in table
+                            and lb_key in table[clan["id"]]["statistics"]
+                        ):
                             rank_gain = (
                                 clan["statistics"][lb_key][rank_key]
                                 - table[clan["id"]]["statistics"][lb_key][rank_key]
