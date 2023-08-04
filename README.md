@@ -1,2 +1,2 @@
 # akatsuki-alt
-Akatsuki! Alt
+This is the code running [Akatsuki! alt discord server](https://discord.com/invite/dGeZ9ugUx9).
