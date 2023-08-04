@@ -25,6 +25,7 @@ async def on_message(message: discord.Message):
     thread.sleeping = False
     args = message.content.split(" ")
     if not message.content.startswith(bot_prefix):
+        thread.sleeping = True
         return
     try:
         command = args[0].lower()[len(bot_prefix) :]
@@ -41,6 +42,7 @@ async def on_message(message: discord.Message):
         elif command == "info":
             await commands.info(message, args)
     except Exception as e:
+        await message.reply("An error has occurred.")
         print(repr(e))
         print(traceback.format_exc())
     thread.sleeping = True
