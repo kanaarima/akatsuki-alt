@@ -12,7 +12,7 @@ async def set_default_gamemode(message: discord.Message, args):
         await message.reply("Specify a gamemode! (std(rx/ap),taiko(rx),ctb(rx),mania)")
         return
     mode = await verify_mode_string(message, args[1])
-    if not mode:
+    if not mode[0]:
         return
     if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
         with open(f"data/trackerbot/{message.author.id}.json") as f:
