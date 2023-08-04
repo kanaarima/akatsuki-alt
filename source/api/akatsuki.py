@@ -2,6 +2,7 @@ import requests
 import datetime
 import time
 import api.utils as utils
+from bs4 import BeautifulSoup
 
 scorelb = dict()
 last_fetch = None
@@ -181,6 +182,19 @@ def grab_clan_ranking_all(pages, pp):
     data["ctb_rx"] = grab_clan_ranking(mode=2, relax=1, pages=pages, pp=pp)
     data["mania_vn"] = grab_clan_ranking(mode=3, relax=0, pages=pages, pp=pp)
     return data
+
+
+def fetch_clan_members(clan_id):
+    r = requests.get(f"https://akatsuki.gg/c/{clan_id}?mode=0&rx=1")
+    if r.status_code != 200:
+        return None
+    if "Clan not found" in r.text:
+        return None
+    soup = BeautifulSoup(r.content, "lxml")
+    members = list()
+    for playerhref in soup.find_all("a", {"class": "player"}):
+        members.append(int(playerhref["href"].split("/")[2]))
+    return members
 
 
 def _blank_clan():
