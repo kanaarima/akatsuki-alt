@@ -33,7 +33,7 @@ async def on_message(message: discord.Message):
         elif command == "setgamemode":
             await commands.set_default_gamemode(message, args)
         elif command == "showclan":
-            await commands.show_clan_r(message, args)
+            await commands.show_clan(message, args)
         elif command == "show":
             await commands.show(message, args)
         elif command == "reset":
