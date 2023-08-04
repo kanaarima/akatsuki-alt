@@ -3,7 +3,7 @@ import trackers.clan_lb_tracker as clan_lb_tracker
 import trackers.user_stats_tracker as user_stats_tracker
 import trackers.maps_lb_tracker as maps_lb_tracker
 import api.flask2discord as flask2discord
-import bot.akataltbot as akataltbot
+import source.bot.discord_bot as discord_bot
 
 # from threading import Thread
 import signal
@@ -15,14 +15,14 @@ stop = False
 function_list = (
     clan_lb_tracker.track_clan_leaderboards,
     flask2discord.flask2discord,
-    akataltbot.akataltbot,
+    discord_bot.akataltbot,
     user_stats_tracker.user_stats_tracker,
     maps_lb_tracker.track_maps,
 )
 function_class = {
     clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker,
     flask2discord.flask2discord: flask2discord,
-    akataltbot.akataltbot: akataltbot,
+    discord_bot.akataltbot: discord_bot,
     user_stats_tracker.user_stats_tracker: user_stats_tracker,
     maps_lb_tracker.track_maps: maps_lb_tracker,
 }  # No reflections

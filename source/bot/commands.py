@@ -1,51 +1,10 @@
-from discord import app_commands
-from typing import Optional
 import api.akatsuki as akatsuki
-import traceback
-import datetime
+import api.utils as utils
 import discord
+import datetime
 import glob
 import json
-import time
 import os
-
-intents = discord.Intents.default()
-intents.message_content = True
-
-client = discord.Client(intents=intents)
-thread = None
-bot_prefix = None
-
-
-@client.event
-async def on_ready():
-    akatsuki.update_scorelb()
-    print(f"We have logged in as {client.user}")
-
-
-@client.event
-async def on_message(message: discord.Message):
-    if message.author == client.user:
-        return
-    thread.sleeping = False
-    args = message.content.split(" ")
-    try:
-        if message.content.startswith("$link"):
-            await link(message, args)
-        elif message.content.startswith(f"{bot_prefix}setgamemode"):
-            await set_default_gamemode(message, args)
-        elif message.content.startswith(f"{bot_prefix}showclan"):
-            await show_clan(message, args)
-        elif message.content.startswith(f"{bot_prefix}show"):
-            await show(message, args)
-        elif message.content.startswith(f"{bot_prefix}reset"):
-            await reset(message, args)
-        elif message.content.startswith(f"{bot_prefix}info"):
-            await info(message, args)
-    except Exception as e:
-        print(repr(e))
-        print(traceback.format_exc())
-    thread.sleeping = True
 
 
 async def set_default_gamemode(message: discord.Message, args):
@@ -334,6 +293,70 @@ async def show_clan(message: discord.Message, args):
     await message.reply(embed=e)
 
 
+async def show_clan_r(message: discord.Message, args):
+    clan_id = None
+    clan_name = None
+    if len(args) > 1:
+        for arg in args:
+            subargs = arg.split("=")
+            if len(subargs) == 2:
+                if subargs[0].lower() == "clan" and subargs[1].isnumeric():
+                    clan_id = int(subargs[1])
+    if not os.path.exists(f"data/trackerbot/{message.author.id}.json") and not clan_id:
+        await message.reply(
+            "You don't have an account linked! Use $link {UserID} first or use clan=clanid!"
+        )
+        return
+    if not clan_id:
+        data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
+        if not data["fetches"][-1]["stats"]["clan"]["id"]:
+            await message.reply(
+                "You haven't join any clan! Join one or use clan=clanid!"
+            )
+            return
+        clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
+    today = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+    yesterday = (datetime.datetime.today() - datetime.timedelta(days=2)).date()
+    filename = f"data/clan_lb/{today}.json.gz"
+    filename_old = f"data/clan_lb/{yesterday}.json.gz"
+    if not os.path.exists(filename):
+        await message.reply(
+            "Leaderboard data is still being generated. Please wait a few minutes."
+        )
+        return
+    data = utils.load_json_gzip(filename)
+    if os.path.exists(filename_old):
+        olddata = utils.load_json_gzip(filename_old)
+    else:
+        olddata = data
+    clan = None
+    for x in data:
+        if x["id"] == clan_id:
+            clan = x
+    if not clan:
+        await message.reply("Clan not found!")
+        return
+    clanold = None
+    for x in olddata:
+        if x["id"] == clan_id:
+            clanold = x
+    if not clanold:
+        clanold = clan
+    string = f"Stats for {clan['name']}\n"
+    for key in clan["statistics"].keys():
+        string += f"{key}:\n"
+        for stat in clan["statistics"][key]:
+            diff = ""
+            if key in clanold["statistics"] and stat in clanold["statistics"][key]:
+                diff = get_gain_string(
+                    clanold["statistics"][key][stat],
+                    clan["statistics"][key][stat],
+                    swap="_rank" in key,
+                )
+            string += f"{' '*4}{stat}: {clan['statistics'][key][stat]}{diff}\n"
+    await message.reply(string)
+
+
 async def info(message: discord.Message, args):
     if os.path.exists(f"data/trackerbot/{message.author.id}.json"):
         with open(f"data/trackerbot/{message.author.id}.json") as f:
@@ -435,9 +458,3 @@ async def update_fetches(file):
         with open(file, "w") as f:
             json.dump(data, f, indent=4)
     return data
-
-
-def akataltbot(secrets):
-    global bot_prefix
-    bot_prefix = secrets["discord_command_prefix"]
-    client.run(secrets["discord_token"])
