@@ -219,8 +219,10 @@ async def show_clan(message: discord.Message, args):
     if not clanold:
         clanold = clan
     string = f"Stats for {clan['name']}\n"
+    cols = list()
     for key in clan["statistics"].keys():
-        string += f"{key}:\n"
+        row = list()
+        row.append(f"{key}:")
         for stat in clan["statistics"][key]:
             diff = ""
             if key in clanold["statistics"] and stat in clanold["statistics"][key]:
@@ -229,8 +231,12 @@ async def show_clan(message: discord.Message, args):
                     clan["statistics"][key][stat],
                     swap="_rank" in key,
                 )
-            string += f"{' '*4}{stat}: {clan['statistics'][key][stat]}{diff}\n"
+            row.append(f"{stat}: {int(clan['statistics'][key][stat])}{diff}")
+        cols.append(row)
     await message.reply(string)
+    strings = utils.wrap_horizontally(cols, wraps=3)
+    for str in strings:
+        await message.channel.send(f"```{str}```")
 
 
 async def info(message: discord.Message, args):

@@ -3,7 +3,7 @@ import trackers.clan_lb_tracker as clan_lb_tracker
 import trackers.user_stats_tracker as user_stats_tracker
 import trackers.maps_lb_tracker as maps_lb_tracker
 import api.flask2discord as flask2discord
-import source.bot.discord_bot as discord_bot
+import bot.discord_bot as discord_bot
 
 # from threading import Thread
 import signal

@@ -63,6 +63,48 @@ def save_json_gzip(data, filepath):
         fout.write(json.dumps(data).encode("utf-8"))
 
 
+def list_to_string(list):
+    res = ""
+    for str in list:
+        res += f"{str}\n"
+    return res
+
+
+def wrap_horizontally(cols, wraps=3):
+    strings = list()
+    max_length = 0
+    for col in cols:
+        for str in col:
+            max_length = max(max_length, len(str))
+    max_length += 1
+    current = list()
+    i = 0
+    for col in cols:
+        i += 1
+        if i > wraps:
+            strings.append(f"{list_to_string(current)}\n")
+            current = list()
+            i = 1
+        if current:
+            x = 0
+            for row in col:
+                current[x] += f"{row: <{max_length}}"  # add padding
+                x += 1
+        else:
+            for row in col:
+                current.append(f"{row: <{max_length}}")
+    if current:
+        strings.append(f"{list_to_string(current)}\n")
+    result = list()
+    for row in strings:
+        if result:
+            if len(result[-1] + row) < 1950:
+                result[-1] = f"{result[-1]}{row}"
+                continue
+        result.append(row)
+    return result
+
+
 def basic_graph(x, y, x_name, y_name, title):
     plot_lock.wait()  # Is plot lock really needed?
     plot_lock.block()
