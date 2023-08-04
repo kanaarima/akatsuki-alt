@@ -264,9 +264,11 @@ def fetch_clan_data():
         "overall",
     ]
 
-    def set_rank(statistics_key, rank_key):
+    def set_rank(statistics_key, rank_key, filter=None):
         for key in keys:
             cl = list()
+            if filter and filter not in key:
+                continue
             for clan in table.values():
                 if not key in clan["statistics"]:
                     continue
@@ -278,8 +280,8 @@ def fetch_clan_data():
                     rank += 1
 
     set_rank("ranked_score", "score_rank")
-    set_rank("performance_points", "pp_rank")
-    set_rank("first_places", "1s_rank")
+    set_rank("performance_points", "pp_rank", "overall")
+    set_rank("first_places", "1s_rank", "overall")
 
     # Probably theres a better way to do this but this works
     return sorted(list(table.values()), key=lambda x: x["id"])
