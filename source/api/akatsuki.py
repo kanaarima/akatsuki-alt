@@ -122,6 +122,25 @@ def grab_user_1s(userid, mode=0, relax=0, page=1, length=10):
     return req.json()
 
 
+def grab_all_user_1s(userid, mode=0, relax=0):
+    scores = list()
+    page = 1
+    length = 100
+    while True:
+        req = requests.get(
+            f"https://akatsuki.gg/api/v1/users/scores/first?mode={mode}&p={page}&l={length}&rx={relax}&id={userid}"
+        )
+        if req.status_code != 200:
+            raise ApiException(f"Error code {req.status_code}")
+        data = req.json()
+        if not data["scores"]:
+            break
+        scores.extend(data["scores"])
+        page += 1
+        time.sleep(1)
+    return scores
+
+
 def get_score_rank(userid, mode, relax, country):
     update_scorelb()
     global_rank = 1
