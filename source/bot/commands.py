@@ -93,7 +93,9 @@ async def show(message: discord.Message, args):
             rx = data["defaultrelax"]
             mode = data["defaultmode"]
             if compareto:
-                files = glob.glob(f"data/user_stats/{compareto}/{data['userid']}.json")
+                files = glob.glob(
+                    f"data/user_stats/{compareto}/{data['userid']}.json.gz"
+                )
                 if not files:
                     await message.reply(
                         "You don't have stats recorded for that day! use $info to check your data."
@@ -115,8 +117,7 @@ async def show(message: discord.Message, args):
             oldest = data["fetches"][0]["stats"]["stats"][rx][mode]
             latest = data["fetches"][-1]["stats"]["stats"][rx][mode]
             if compareto:
-                with open(files[0]) as f:
-                    oldest = json.load(f)["stats"][rx][mode]
+                oldest = utils.load_json_gzip(files[0])["stats"][rx][mode]
         ranked_score = f"{latest['ranked_score']:,} {get_gain_string(oldest['ranked_score'], latest['ranked_score'])}"
         total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
         total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"

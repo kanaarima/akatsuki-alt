@@ -48,8 +48,7 @@ def user_stats_tracker(secrets):
                             ]  # dont store all metadata
                         fetch["first_places"][mode][rx] = first_places
                 beatmapdb.update_beatmaps(beatmaps, akatmaps)
-                with open(f"{dir}/{data['userid']}.json", "w") as f:
-                    json.dump(fetch, f)
+                utils.save_json_gzip(fetch, f"{dir}/{data['userid']}.json.gz")
             beatmapdb.save_beatmaps(beatmaps)
         except Exception as e:
             print(e)
