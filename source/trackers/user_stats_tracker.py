@@ -1,3 +1,4 @@
+import api.beatmapdb as beatmapdb
 import api.akatsuki as akatsuki
 import api.utils as utils
 import traceback
@@ -22,13 +23,34 @@ def user_stats_tracker(secrets):
                 time.sleep(60 * 5)
                 continue
             os.makedirs(dir)
+            beatmaps = beatmapdb.load_beatmaps()
             for file in files:
                 with open(file) as f:
                     data = json.load(f)
                 fetch = akatsuki.grab_stats(data["userid"])
+                fetch["first_places"] = [[0, 0, 0], [0, 0], [0, 0], [0]]
+                modes = {
+                    "std": ((0, 0), (0, 1), (0, 2)),
+                    "taiko": ((1, 0), (1, 1)),
+                    "ctb": ((2, 0), (2, 1)),
+                    "mania": ((3, 0),),
+                }
+                akatmaps = list()
+                for mode_name in modes.keys():
+                    for mode, rx in modes[mode_name]:
+                        first_places = akatsuki.grab_all_user_1s(
+                            data["userid"], mode, rx
+                        )
+                        for score in first_places:
+                            akatmaps.append(beatmapdb.convert_akatapi(score["beatmap"]))
+                            score["beatmap"] = score["beatmap"][
+                                "beatmap_id"
+                            ]  # dont store all metadata
+                        fetch["first_places"][mode][rx] = first_places
+                beatmapdb.update_beatmaps(beatmaps, akatmaps)
                 with open(f"{dir}/{data['userid']}.json", "w") as f:
                     json.dump(fetch, f)
-                time.sleep(1)
+            beatmapdb.save_beatmaps(beatmaps)
         except Exception as e:
             print(e)
             if "error_channel" in secrets:

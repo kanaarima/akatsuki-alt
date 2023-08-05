@@ -48,7 +48,17 @@ def convert_osualt_csv_str(values):
     return map
 
 
-import time
+def convert_akatapi(data, source="akatsuki_1s"):
+    songname, difficulty = data["song_name"].rsplit("[", 1)
+    map = _blank_beatmap()
+    map["source"] = source
+    map["beatmap_id"] = data["beatmap_id"]
+    map["beatmap_set_id"] = data["beatmapset_id"]
+    map["artist"] = songname.split("-", 1)[0]
+    map["title"] = songname.split("-", 1)[1]
+    map["difficulty"] = difficulty[: len(difficulty) - 1]
+    map["stars"] = data["difficulty"]
+    return map
 
 
 def load_osualt_csv():
