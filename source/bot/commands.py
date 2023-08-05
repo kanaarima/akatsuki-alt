@@ -245,7 +245,7 @@ async def info(message: discord.Message, args):
         with open(f"data/trackerbot/{message.author.id}.json") as f:
             data = json.load(f)
             userid = data["userid"]
-            files = glob.glob(f"data/user_stats/*/{userid}.json")
+            files = glob.glob(f"data/user_stats/*/{userid}.json.gz")
             msg = "```Your data:\nUser stats recorded: "
             for file in files:
                 msg += f"{file.split('/')[2]} "
