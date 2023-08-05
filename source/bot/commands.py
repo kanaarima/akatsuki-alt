@@ -173,11 +173,14 @@ async def show(message: discord.Message, args):
 
 async def show_clan(message: discord.Message, args):
     clan_id = None
+    compareto = None
     if len(args) > 1:
         for arg in args:
             subargs = arg.split("=")
             if len(subargs) == 2:
-                if subargs[0].lower() == "clan" and subargs[1].isnumeric():
+                if subargs[0].lower() == "compareto":
+                    compareto = subargs[1].replace(".", "").replace("/", "")
+                elif subargs[0].lower() == "clan" and subargs[1].isnumeric():
                     clan_id = int(subargs[1])
     if not os.path.exists(f"data/trackerbot/{message.author.id}.json") and not clan_id:
         await message.reply(
@@ -192,6 +195,7 @@ async def show_clan(message: discord.Message, args):
             )
             return
         clan_id = data["fetches"][-1]["stats"]["clan"]["id"]
+
     today = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
     yesterday = (datetime.datetime.today() - datetime.timedelta(days=2)).date()
     filename = f"data/clan_lb/{today}.json.gz"
@@ -202,6 +206,11 @@ async def show_clan(message: discord.Message, args):
         )
         return
     data = utils.load_json_gzip(filename)
+    if compareto:
+        filename_old = f"data/clan_lb/{compareto}.json.gz"
+        if not os.path.exists(filename_old):
+            await message.reply(f"We don't have data for {compareto} :pensive:")
+            return
     if os.path.exists(filename_old):
         olddata = utils.load_json_gzip(filename_old)
     else:
