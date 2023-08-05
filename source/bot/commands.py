@@ -122,10 +122,12 @@ async def show(message: discord.Message, args):
         total_score = f"{latest['total_score']:,} {get_gain_string(oldest['total_score'], latest['total_score'])}"
         total_hits = f"{latest['total_hits']:,} {get_gain_string(oldest['total_hits'], latest['total_hits'])}"
         playcount = f"{latest['playcount']:,} {get_gain_string(oldest['playcount'], latest['playcount'])}"
-        playtime = f"{latest['playtime']/60/60:.0f}h {get_gain_string(oldest['playtime']/60/60, latest['playtime']/60/60,float=True)}"
+        playtime = f"{latest['playtime']/60/60:.0f}h {get_gain_string(oldest['playtime']/60/60, latest['playtime']/60/60)}"
         replays_watched = f"{latest['replays_watched']} {get_gain_string(oldest['replays_watched'], latest['replays_watched'])}"
-        level = f"{latest['level']:.2f} {get_gain_string(oldest['level'], latest['level'], float=True)}"
-        accuracy = f"{latest['accuracy']:.2f}% {get_gain_string(oldest['accuracy'], latest['accuracy'], float=True)}"
+        level = (
+            f"{latest['level']:.2f} {get_gain_string(oldest['level'], latest['level'])}"
+        )
+        accuracy = f"{latest['accuracy']:.2f}% {get_gain_string(oldest['accuracy'], latest['accuracy'], )}"
         max_combo = f"{latest['max_combo']:,} {get_gain_string(oldest['max_combo'], latest['max_combo'])}"
         global_leaderboard_rank = f"#{latest['global_leaderboard_rank']} {get_gain_string(oldest['global_leaderboard_rank'], latest['global_leaderboard_rank'],swap=True)}"
         country_leaderboard_rank = f"#{latest['country_leaderboard_rank']} {get_gain_string(oldest['country_leaderboard_rank'], latest['country_leaderboard_rank'],swap=True)}"
@@ -241,7 +243,7 @@ async def show_clan(message: discord.Message, args):
                     clan["statistics"][key][stat],
                     swap="_rank" in key,
                 )
-            row.append(f"{stat}: {int(clan['statistics'][key][stat])}{diff}")
+            row.append(f"{stat}: {format_number(clan['statistics'][key][stat])}{diff}")
         cols.append(row)
     await message.reply(string)
     strings = utils.wrap_horizontally(cols, wraps=3)
@@ -283,7 +285,7 @@ async def reset(message: discord.Message, args):
         )
 
 
-def get_gain_string(old, new, float=False, swap=False):
+def get_gain_string(old, new, swap=False):
     if not old and old != 0:
         return ""
     if swap:
@@ -293,9 +295,13 @@ def get_gain_string(old, new, float=False, swap=False):
     if old == new:
         return ""
     if old > new:
-        return f"({new-old:,.2f})" if float else f"({new-old:,})"
+        return f"({format_number(new-old)})"
     else:
-        return f"(+{new-old:,.2f})" if float else f"(+{new-old:,})"
+        return f"(+{format_number(new-old)})"
+
+
+def format_number(number):
+    return f"{number:,.2f}" if isinstance(number, float) else f"{number:,}"
 
 
 async def verify_mode_string(message, arg):
