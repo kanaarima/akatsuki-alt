@@ -27,6 +27,11 @@ def user_stats_tracker(secrets):
             for file in files:
                 with open(file) as f:
                     data = json.load(f)
+                filename = f"{dir}/{data['userid']}.json.gz"
+                if os.path.exists(
+                    filename
+                ):  # skip fetching twice if 2 users have the same account linked
+                    continue
                 fetch = akatsuki.grab_stats(data["userid"])
                 fetch["first_places"] = [[0, 0, 0], [0, 0], [0, 0], [0]]
                 modes = {
@@ -48,7 +53,7 @@ def user_stats_tracker(secrets):
                             ]  # dont store all metadata
                         fetch["first_places"][mode][rx] = first_places
                 beatmapdb.update_beatmaps(beatmaps, akatmaps)
-                utils.save_json_gzip(fetch, f"{dir}/{data['userid']}.json.gz")
+                utils.save_json_gzip(fetch, filename)
             beatmapdb.save_beatmaps(beatmaps)
         except Exception as e:
             print(e)
