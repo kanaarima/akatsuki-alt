@@ -190,7 +190,9 @@ async def show_clan(message: discord.Message, args):
         )
         return
     if not clan_id:
-        data = await update_fetches(f"data/trackerbot/{message.author.id}.json")
+        data = await update_fetches(
+            f"data/trackerbot/{message.author.id}.json", ignore=True
+        )
         if not data["fetches"][-1]["stats"]["clan"]["id"]:
             await message.reply(
                 "You haven't join any clan! Join one or use clan=clanid!"
@@ -323,7 +325,7 @@ async def verify_mode_string(message, arg):
     return modes[arg.lower()]
 
 
-async def update_fetches(file):
+async def update_fetches(file, ignore=False):
     with open(file) as f:
         data = json.load(f)
     fetches = list()
@@ -343,6 +345,8 @@ async def update_fetches(file):
         )
         update = True
     else:
+        if ignore:
+            return data
         update = True
         if (datetime.datetime.now() - time) > datetime.timedelta(minutes=5):
             fetches.append(
