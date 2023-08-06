@@ -276,6 +276,7 @@ async def show_1s(message: discord.Message, args):
             mode, rx = await verify_mode_string(message, args[1])
             if not mode:
                 return
+    mode = akatsuki.modes[mode]
     today = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
     yesterday = (datetime.datetime.today() - datetime.timedelta(days=2)).date()
     new = f"data/user_stats/{today}/{data['userid']}.json.gz"
@@ -307,13 +308,15 @@ async def show_1s(message: discord.Message, args):
             new.append(score)
     metadata = beatmapdb.load_beatmaps(as_table=True)
     str = f"#1 changes for {username}:\n```New:\n"
-    for score in new:
-        id = {score["beatmap"]}
-        str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
-    str += f"Lost:\n"
-    for score in table.values():
-        id = {score["beatmap"]}
-        str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
+    if new:
+        for score in new:
+            id = score["beatmap"]
+            str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
+    if table:
+        str += f"Lost:\n"
+        for score in table.values():
+            id = score["beatmap"]
+            str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
     str += "```"
     await message.reply(str)
 
