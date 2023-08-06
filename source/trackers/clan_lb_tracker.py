@@ -87,7 +87,7 @@ def track_clan_leaderboards(secrets):
             os.makedirs("data/clan_lb/", exist_ok=True)
             data = akat.fetch_clan_data()
             utils.save_json_gzip(data, filename)
-
+            os.system(f"cp {filename} data/clan_lb/latest.json.gz")
             for lb_key in lb_keys:
                 for rank_key in rank_keys.keys():
                     clans = list()
