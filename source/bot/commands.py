@@ -1,3 +1,4 @@
+import api.beatmapdb as beatmapdb
 import api.akatsuki as akatsuki
 import api.utils as utils
 import discord
@@ -251,6 +252,70 @@ async def show_clan(message: discord.Message, args):
     strings = utils.wrap_horizontally(cols, wraps=3)
     for str in strings:
         await message.channel.send(f"```{str}```")
+
+
+async def show_1s(message: discord.Message, args):
+    compareto = None
+    if len(args) > 1:
+        for arg in args:
+            subargs = arg.split("=")
+            if len(subargs) == 2:
+                if subargs[0].lower() == "compareto":
+                    compareto = subargs[1].replace(".", "").replace("/", "")
+    if not os.path.exists(f"data/trackerbot/{message.author.id}.json"):
+        await message.reply("You don't have an account linked!")
+        return
+    data = await update_fetches(
+        f"data/trackerbot/{message.author.id}.json", ignore=True
+    )
+    username = data["fetches"][0]["stats"]["username"]
+    rx = data["defaultrelax"]
+    mode = data["defaultmode"]
+    if len(args) > 1:
+        if not len(args[1].split("=")) == 2:
+            mode, rx = await verify_mode_string(message, args[1])
+            if not mode:
+                return
+    today = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
+    yesterday = (datetime.datetime.today() - datetime.timedelta(days=2)).date()
+    new = f"data/user_stats/{today}/{data['userid']}.json.gz"
+    old = f"data/user_stats/{yesterday}/{data['userid']}.json.gz"
+    if compareto:
+        old = f"data/user_stats/{compareto}/{data['userid']}.json.gz"
+    newfile = glob.glob(new)
+    oldfile = glob.glob(old)
+    if not newfile or not oldfile:
+        await message.reply(
+            "You don't have stats recorded for that day! use $info to check your data."
+        )
+        return
+    newdata = utils.load_json_gzip(newfile[0])
+    olddata = utils.load_json_gzip(oldfile[0])
+    if "first_places" not in newdata or "first_places" not in olddata:
+        await message.reply(
+            "We don't store first places data for that time sadly :pensive: "
+        )
+        return
+    table = dict()
+    new = list()
+    for score in olddata["first_places"][mode][rx]:
+        table[score["id"]] = score
+    for score in newdata["first_places"][mode][rx]:
+        if score["id"] in table:
+            del table[score["id"]]
+        else:
+            new.append(score)
+    metadata = beatmapdb.load_beatmaps(as_table=True)
+    str = f"#1 changes for {username}:\n```New:\n"
+    for score in new:
+        id = {score["beatmap"]}
+        str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
+    str += f"Lost:\n"
+    for score in table.values():
+        id = {score["beatmap"]}
+        str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
+    str += "```"
+    await message.reply(str)
 
 
 async def info(message: discord.Message, args):

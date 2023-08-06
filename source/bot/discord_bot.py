@@ -41,6 +41,8 @@ async def on_message(message: discord.Message):
             await commands.reset(message, args)
         elif command == "info":
             await commands.info(message, args)
+        elif command == "show1s":
+            await commands.show_1s(message, args)
     except Exception as e:
         await message.reply("An error has occurred.")
         print(repr(e))
