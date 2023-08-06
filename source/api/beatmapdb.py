@@ -3,11 +3,17 @@ import csv
 import os
 
 
-def load_beatmaps():
+def load_beatmaps(as_table=False):
     if not os.path.exists("data/beatmaps.json.gz"):
         save_beatmaps(list())
         return list()
-    return utils.load_json_gzip("data/beatmaps.json.gz")
+    data = utils.load_json_gzip("data/beatmaps.json.gz")
+    if as_table:
+        table = dict()
+        for map in data:
+            table[map["beatmap_id"]] = map
+        return table
+    return data
 
 
 def save_beatmaps(data: list):
