@@ -124,7 +124,7 @@ def grab_user_leaderboards(
 
 
 def grab_user_1s(userid, mode=0, relax=0, page=1, length=10):
-    time.sleep(0.2)
+    time.sleep(1)
     req = requests.get(
         f"https://akatsuki.gg/api/v1/users/scores/first?mode={mode}&p={page}&l={length}&rx={relax}&id={userid}&uid={userid}"
     )
