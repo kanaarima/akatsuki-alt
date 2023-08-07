@@ -143,11 +143,12 @@ def grab_user_best(userid, mode=0, relax=0, page=1, pages=1, length=100):
     if pages > 1:
         res = req.json()
         for p in range(1, pages):
-            res["scores"].extend(
-                grab_user_best(
-                    userid=userid, mode=mode, relax=relax, page=p + 1, length=length
-                )["scores"]
-            )
+            scores = grab_user_best(
+                userid=userid, mode=mode, relax=relax, page=p + 1, length=length
+            )["scores"]
+            if not scores:
+                break
+            res["scores"].extend(scores)
         return res
     return req.json()
 
