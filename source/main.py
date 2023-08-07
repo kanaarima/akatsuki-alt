@@ -1,8 +1,9 @@
 from api.utils import WThread as Thread
 import trackers.clan_lb_tracker as clan_lb_tracker
 import trackers.user_stats_tracker as user_stats_tracker
-import trackers.user_lb_stats_tracker as user_lb_stats_tracker
+import trackers.user_lb_tracker as user_lb_tracker
 import trackers.maps_lb_tracker as maps_lb_tracker
+import trackers.score_1s_tracker as score_1s_tracker
 import api.flask2discord as flask2discord
 import bot.discord_bot as discord_bot
 
@@ -18,16 +19,18 @@ function_list = (
     flask2discord.flask2discord,
     discord_bot.akataltbot,
     user_stats_tracker.user_stats_tracker,
-    user_lb_stats_tracker.user_lb_stats_tracker,
+    user_lb_tracker.user_lb_stats_tracker,
     maps_lb_tracker.track_maps,
+    score_1s_tracker.score_1s_tracker,
 )
 function_class = {
     clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker,
     flask2discord.flask2discord: flask2discord,
     discord_bot.akataltbot: discord_bot,
     user_stats_tracker.user_stats_tracker: user_stats_tracker,
-    user_lb_stats_tracker.user_lb_stats_tracker: user_lb_stats_tracker,
+    user_lb_tracker.user_lb_stats_tracker: user_lb_tracker,
     maps_lb_tracker.track_maps: maps_lb_tracker,
+    score_1s_tracker.score_1s_tracker: score_1s_tracker,
 }  # No reflections
 
 
