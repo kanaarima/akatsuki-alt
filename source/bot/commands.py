@@ -306,9 +306,13 @@ async def show_1s(message: discord.Message, args):
             del table[score["id"]]
         else:
             new.append(score)
+    if not new and not table:
+        await message.reply("No changes :pensive:")
+        return
     metadata = beatmapdb.load_beatmaps(as_table=True)
-    str = f"#1 changes for {username}:\n```New:\n"
+    str = f"#1 changes for {username}:\n```"
     if new:
+        str += "New:\n"
         for score in new:
             id = score["beatmap"]
             str += f"{metadata[id]['title']} [{metadata[id]['difficulty']}] {score['accuracy']}% {score['rank']} {score['pp']}pp\n"
