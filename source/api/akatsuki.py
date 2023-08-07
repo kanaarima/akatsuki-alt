@@ -102,10 +102,10 @@ def grab_all_clan_stats_avg(clan_id):
     return stats
 
 
-def grab_score_leaderboards(mode=0, relax=0, page=1, length=500):
+def grab_user_leaderboards(mode=0, relax=0, page=1, length=500, sort="score"):
     time.sleep(0.4)
     req = requests.get(
-        f"https://akatsuki.gg/api/v1/leaderboard?mode={mode}&p={page}&l={length}&country=&rx={relax}&sort=score"
+        f"https://akatsuki.gg/api/v1/leaderboard?mode={mode}&p={page}&l={length}&country=&rx={relax}&sort={sort}"
     )
     if req.status_code != 200 and req.status_code < 500:  # ignore code 500
         raise ApiException(f"Error code {req.status_code}")
@@ -167,20 +167,20 @@ def update_scorelb():
             {"std": list(), "taiko": list(), "ctb": list()},
             {"std": list()},
         ]
-        scorelb[0]["std"] = grab_score_leaderboards(mode=0, relax=0)["users"]
-        scorelb[1]["std"] = grab_score_leaderboards(mode=0, relax=1)["users"]
-        scorelb[2]["std"] = grab_score_leaderboards(mode=0, relax=2)["users"]
-        scorelb[0]["taiko"] = grab_score_leaderboards(mode=1, relax=0)["users"]
-        scorelb[1]["taiko"] = grab_score_leaderboards(mode=1, relax=1)["users"]
-        scorelb[0]["ctb"] = grab_score_leaderboards(mode=2, relax=0)["users"]
-        scorelb[1]["ctb"] = grab_score_leaderboards(mode=2, relax=1)["users"]
-        scorelb[0]["mania"] = grab_score_leaderboards(mode=3, relax=0)["users"]
+        scorelb[0]["std"] = grab_user_leaderboards(mode=0, relax=0)["users"]
+        scorelb[1]["std"] = grab_user_leaderboards(mode=0, relax=1)["users"]
+        scorelb[2]["std"] = grab_user_leaderboards(mode=0, relax=2)["users"]
+        scorelb[0]["taiko"] = grab_user_leaderboards(mode=1, relax=0)["users"]
+        scorelb[1]["taiko"] = grab_user_leaderboards(mode=1, relax=1)["users"]
+        scorelb[0]["ctb"] = grab_user_leaderboards(mode=2, relax=0)["users"]
+        scorelb[1]["ctb"] = grab_user_leaderboards(mode=2, relax=1)["users"]
+        scorelb[0]["mania"] = grab_user_leaderboards(mode=3, relax=0)["users"]
         for i in range(2, 4 + 1):
             scorelb[0]["std"].extend(
-                grab_score_leaderboards(mode=0, relax=0, page=i)["users"]
+                grab_user_leaderboards(mode=0, relax=0, page=i)["users"]
             )
             scorelb[1]["std"].extend(
-                grab_score_leaderboards(mode=0, relax=1, page=i)["users"]
+                grab_user_leaderboards(mode=0, relax=1, page=i)["users"]
             )
 
     scorelb_lock.unblock()
