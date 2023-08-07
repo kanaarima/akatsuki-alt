@@ -133,6 +133,25 @@ def grab_user_1s(userid, mode=0, relax=0, page=1, length=10):
     return req.json()
 
 
+def grab_user_best(userid, mode=0, relax=0, page=1, pages=1, length=100):
+    time.sleep(0.4)
+    req = requests.get(
+        f"https://akatsuki.gg/api/v1/users/scores/best?mode={mode}&p={page}&l={length}&rx={relax}&id={userid}&uid={userid}"
+    )
+    if req.status_code != 200 and req.status_code < 500:  # ignore code 500
+        raise ApiException(f"Error code {req.status_code}")
+    if pages > 1:
+        res = req.json()
+        for p in range(1, pages):
+            res["scores"].extend(
+                grab_user_best(
+                    userid=userid, mode=mode, relax=relax, page=p + 1, length=length
+                )["scores"]
+            )
+        return res
+    return req.json()
+
+
 def grab_all_user_1s(userid, mode=0, relax=0):
     scores = list()
     page = 1
