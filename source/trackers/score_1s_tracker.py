@@ -15,7 +15,7 @@ def score_1s_tracker(secrets):
         try:
             thread.sleeping = False
             yesterday = (datetime.datetime.today() - datetime.timedelta(days=1)).date()
-            if yesterday.weekday != 1:  # run only on monday
+            if yesterday.weekday() != 0:  # run only on monday
                 thread.sleeping = True
                 time.sleep(60 * 5)
                 continue
