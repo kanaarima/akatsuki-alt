@@ -63,7 +63,9 @@ def process_maps():
     return modded_final
 
 
-def recommend(total_pp, top100=None, mods=None, pp_min=None, pp_max=None):
+def recommend(
+    total_pp, top100=None, mods=None, mods_exclude=None, pp_min=None, pp_max=None
+):
     maps = process_maps()
     maps.sort(key=lambda x: x["farm_index"], reverse=True)
     min_pp = (total_pp / 20) - 40
@@ -80,9 +82,18 @@ def recommend(total_pp, top100=None, mods=None, pp_min=None, pp_max=None):
         if mods:
             for mod in mods:
                 if mod == "NM":
-                    if len(map["mods"]) != 0:
+                    if map["mods"]:
                         skip = True
-                if mod not in map["mods"]:
+                    else:
+                        map["mods"].append("NM")
+                elif mod not in map["mods"]:
+                    skip = True
+        if mods_exclude:
+            for mod in mods_exclude:
+                if mod == "NM":
+                    if len(map["mods"]) == 0:
+                        skip = True
+                if mod in map["mods"]:
                     skip = True
         if not skip:
             possible_maps.append(map)

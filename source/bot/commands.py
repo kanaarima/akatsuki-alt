@@ -443,6 +443,7 @@ async def recommend(message: discord.Message, args):
         f"data/trackerbot/{message.author.id}.json", ignore=True
     )
     mods = None
+    mods_exclude = None
     pp_min = None
     pp_max = None
     for arg in args:
@@ -451,6 +452,8 @@ async def recommend(message: discord.Message, args):
             continue
         if x[0] == "mods":
             mods = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
+        elif x[0] == "mods_exclude":
+            mods_exclude = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
         elif x[0] == "pp":
             y = x[1].split(":")
             if len(y) > 1:
@@ -464,6 +467,7 @@ async def recommend(message: discord.Message, args):
         tillerino_data["pp"],
         tillerino_data["top_100"],
         mods=mods,
+        mods_exclude=mods_exclude,
         pp_min=pp_min,
         pp_max=pp_max,
     )
