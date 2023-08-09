@@ -91,9 +91,11 @@ def recommend(
         if mods_exclude:
             for mod in mods_exclude:
                 if mod == "NM":
-                    if len(map["mods"]) == 0:
+                    if map["mods"]:
                         skip = True
-                if mod in map["mods"]:
+                    else:
+                        map["mods"].append("NM")
+                elif mod in map["mods"]:
                     skip = True
         if not skip:
             possible_maps.append(map)
