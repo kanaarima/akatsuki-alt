@@ -1,4 +1,5 @@
 import api.beatmapdb as beatmapdb
+import bot.tillerino as tillerino
 import api.akatsuki as akatsuki
 import api.utils as utils
 import discord
@@ -432,3 +433,56 @@ async def update_fetches(file, ignore=False):
         with open(file, "w") as f:
             json.dump(data, f, indent=4)
     return data
+
+
+async def recommend(message: discord.Message, args):
+    if not os.path.exists(f"data/trackerbot/{message.author.id}.json"):
+        await message.reply("You don't have an account linked!")
+        return
+    data = await update_fetches(
+        f"data/trackerbot/{message.author.id}.json", ignore=True
+    )
+    mods = None
+    pp_min = None
+    pp_max = None
+    for arg in args:
+        x = arg.split("=")
+        if len(x) != 2:
+            continue
+        if x[0] == "mods":
+            mods = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
+        elif x[0] == "pp":
+            y = x[1].split(":")
+            if len(y) > 1:
+                pp_min = int(y[0])
+                pp_max = int(y[1])
+            else:
+                pp_min = int(y[0]) - 50
+                pp_max = int(y[0])
+    tillerino_data = tillerino.get_data(data["userid"])
+    rec = tillerino.recommend(
+        tillerino_data["pp"],
+        tillerino_data["top_100"],
+        mods=mods,
+        pp_min=pp_min,
+        pp_max=pp_max,
+    )
+    map = tillerino.beatmaps[rec["beatmap_id"]]
+    image = (
+        f"https://assets.ppy.sh/beatmaps/{map['beatmap_set_id']}/covers/cover@2x.jpg"
+    )
+    title = f"({map['artist']} - {map['title']} [{map['difficulty']}])[https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}]"
+    embed = discord.Embed()
+    embed.set_image(url=image)
+    embed.set_author(
+        name=f"{map['artist']} - {map['title']} [{map['difficulty']}]",
+        url=f"https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}",
+    )
+    embed.add_field(name="Nomod SR", value=map["stars"])
+    embed.add_field(name="Mods", value="".join(rec["mods"]))
+    embed.add_field(name="PP", value=rec["pp"])
+    embed.add_field(
+        name="Peppy download",
+        value=f"https://osu.ppy.sh/beatmapsets/{map['beatmap_set_id']}",
+    )
+    await message.reply(embed=embed)
