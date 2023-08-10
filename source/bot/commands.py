@@ -468,6 +468,8 @@ async def recommend(message: discord.Message, args):
                 pp_max = int(y[0]) + 25
         if x[0] == "quantity":
             quantity = min(int(x[1]), 25)
+    pp_min = max(1, pp_min)
+    
     tillerino_data = tillerino.get_data(data["userid"])
     recs = tillerino.recommend(
         tillerino_data["pp"],
