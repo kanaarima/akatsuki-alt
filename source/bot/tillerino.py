@@ -30,11 +30,11 @@ def process_maps():
     modded_final = list()
     for score in scores:
         mods = utils.get_mods(score["mods"])
-        if "FL" in mods:
-            continue
         mods.remove("RX")
-        if "HD" in mods:
-            mods.remove("HD")
+        if "NC" in mods:
+            mods.remove("NC")
+        if "SO" in mods:
+            mods.remove("SO")
         mods = "".join(mods)
         if not score["beatmap"] in modded:
             modded[score["beatmap"]] = {}
@@ -64,7 +64,13 @@ def process_maps():
 
 
 def recommend(
-    total_pp, top100=None, mods=None, mods_exclude=None, pp_min=None, pp_max=None
+    total_pp,
+    top100=None,
+    mods=None,
+    mods_exclude=["EZ", "FL"],
+    pp_min=None,
+    pp_max=None,
+    quantity=1,
 ):
     maps = process_maps()
     maps.sort(key=lambda x: x["farm_index"], reverse=True)
@@ -110,7 +116,14 @@ def recommend(
     for map in possible_maps:
         weights.append(map["farm_index"])
     weights_normalised = [float(i) / max(weights) for i in weights]
-    return random.choices(possible_maps, weights=weights_normalised)[0]
+    return random_choices(possible_maps, weights=weights_normalised, samples=quantity)
+
+
+def random_choices(data, weights, samples):
+    choices = random.choices(data, weights=weights, k=samples * 2)
+    result = list()
+    [result.append(x) for x in choices if x not in result]
+    return result[:samples]
 
 
 simple_cache = {}

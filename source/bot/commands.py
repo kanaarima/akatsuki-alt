@@ -446,6 +446,7 @@ async def recommend(message: discord.Message, args):
     mods_exclude = None
     pp_min = None
     pp_max = None
+    quantity = 1
     for arg in args:
         x = arg.split("=")
         if len(x) != 2:
@@ -462,31 +463,47 @@ async def recommend(message: discord.Message, args):
             else:
                 pp_min = int(y[0]) - 50
                 pp_max = int(y[0])
+        if x[0] == "quantity":
+            quantity = int(x[1])
     tillerino_data = tillerino.get_data(data["userid"])
-    rec = tillerino.recommend(
+    recs = tillerino.recommend(
         tillerino_data["pp"],
         tillerino_data["top_100"],
         mods=mods,
         mods_exclude=mods_exclude,
         pp_min=pp_min,
         pp_max=pp_max,
+        quantity=quantity,
     )
-    map = tillerino.beatmaps[rec["beatmap_id"]]
-    image = (
-        f"https://assets.ppy.sh/beatmaps/{map['beatmap_set_id']}/covers/cover@2x.jpg"
-    )
-    title = f"({map['artist']} - {map['title']} [{map['difficulty']}])[https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}]"
-    embed = discord.Embed()
-    embed.set_image(url=image)
-    embed.set_author(
-        name=f"{map['artist']} - {map['title']} [{map['difficulty']}]",
-        url=f"https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}",
-    )
-    embed.add_field(name="Nomod SR", value=map["stars"])
-    embed.add_field(name="Mods", value="".join(rec["mods"]))
-    embed.add_field(name="PP", value=rec["pp"])
-    embed.add_field(
-        name="Peppy download",
-        value=f"https://osu.ppy.sh/beatmapsets/{map['beatmap_set_id']}",
-    )
-    await message.reply(embed=embed)
+    if len(recs) == 1:
+        rec = recs[0]
+        map = tillerino.beatmaps[rec["beatmap_id"]]
+        image = f"https://assets.ppy.sh/beatmaps/{map['beatmap_set_id']}/covers/cover@2x.jpg"
+        embed = discord.Embed()
+        embed.set_image(url=image)
+        embed.set_author(
+            name=f"{map['artist']} - {map['title']} [{map['difficulty']}]",
+            url=f"https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}",
+        )
+        embed.add_field(name="Nomod SR", value=map["stars"])
+        embed.add_field(name="Mods", value="".join(rec["mods"]))
+        embed.add_field(name="PP", value=rec["pp"])
+        embed.add_field(
+            name="Peppy download",
+            value=f"",
+        )
+        await message.reply(embed=embed)
+    else:
+        embed = discord.Embed()
+        for rec in recs:
+            map = tillerino.beatmaps[rec["beatmap_id"]]
+            mapx = {
+                "key": f"{map['artist']} - {map['title']} [{map['difficulty']}]]\n",
+                "text": "",
+            }
+            mapx["text"] += f"{''.join(rec['mods'])} {rec['pp']}pp\n"
+            mapx[
+                "text"
+            ] += f"[direct](https://towwyyyy.marinaa.nl/osu/osudl.html?beatmap={rec['beatmap_id']}) [bancho](https://osu.ppy.sh/beatmapsets/{map['beatmap_set_id']})\n"
+            embed.add_field(name=mapx["key"], value=mapx["text"])
+        await message.reply(embed=embed)
