@@ -488,9 +488,11 @@ async def recommend(message: discord.Message, args):
         embed.add_field(name="Nomod SR", value=map["stars"])
         embed.add_field(name="Mods", value="".join(rec["mods"]))
         embed.add_field(name="PP", value=rec["pp"])
+        embed.add_field(name="Source", value=map["source"])
+        embed.add_field(name="Farm index", value=rec["farm_index"])
         embed.add_field(
             name="Peppy download",
-            value=f"",
+            value=f"https://osu.ppy.sh/beatmapsets/{map['beatmap_set_id']}",
         )
         await message.reply(embed=embed)
     else:
