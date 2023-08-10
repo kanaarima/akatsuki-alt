@@ -452,7 +452,7 @@ async def recommend(message: discord.Message, args):
         if len(x) != 2:
             continue
         if x[0] == "mods":
-            mods = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
+            mods = [x[1].upper()[i : i + 2] for i in range(0, len(x[1]), 2)]
             for mod in mods:
                 if mod in mods_exclude:
                     mods_exclude.remove(mod)
@@ -468,8 +468,7 @@ async def recommend(message: discord.Message, args):
                 pp_max = int(y[0]) + 25
         if x[0] == "quantity":
             quantity = min(int(x[1]), 25)
-    pp_min = max(1, pp_min)
-    
+
     tillerino_data = tillerino.get_data(data["userid"])
     recs = tillerino.recommend(
         tillerino_data["pp"],
