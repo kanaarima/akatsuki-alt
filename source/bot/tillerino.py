@@ -2,7 +2,7 @@ import requests
 import api.beatmapdb as beatmapdb
 import api.akatsuki as akat
 import api.utils as utils
-import random
+import numpy
 
 beatmaps = None
 scores = list()
@@ -15,7 +15,13 @@ def load_scores():
 
 
 def _map():
-    return {"beatmap_id": 0, "farm_index": 0, "pp": 0, "mods": list()}
+    return {
+        "beatmap_id": 0,
+        "total_frequency": 0,
+        "farm_index": 0,
+        "pp": 0,
+        "mods": list(),
+    }
 
 
 def process_maps():
@@ -53,12 +59,14 @@ def process_maps():
                     continue
                 selected += 1
                 avg_pp += modded_score["pp"]
+
             avg_pp /= selected
             map = _map()
             map["pp"] = avg_pp
             map["beatmap_id"] = beatmap_id
             map["mods"] = [mods_key[i : i + 2] for i in range(0, len(mods_key), 2)]
-            map["farm_index"] = farm_index[beatmap_id]
+            map["total_frequency"] = farm_index[beatmap_id]
+            map["farm_index"] = selected
             modded_final.append(map)
     return modded_final
 
@@ -72,8 +80,9 @@ def recommend(
     pp_max=None,
     quantity=1,
 ):
+    key = "total_frequency"
     maps = process_maps()
-    maps.sort(key=lambda x: x["farm_index"], reverse=True)
+    maps.sort(key=lambda x: x[key], reverse=True)
     min_pp = (total_pp / 20) - 40
     max_pp = (total_pp / 20) + 80
     if pp_min:
@@ -114,13 +123,20 @@ def recommend(
                 possible_maps.remove(possible_map)
     weights = list()
     for map in possible_maps:
-        weights.append(map["farm_index"])
-    weights_normalised = [float(i) / max(weights) for i in weights]
-    return random_choices(possible_maps, weights=weights_normalised, samples=quantity)
+        weights.append(get_weight(map))
+    return random_choices(possible_maps, weights=weights, samples=quantity)
+
+
+def get_weight(map):
+    frequency = map["total_frequency"]
+    mod_frequency = map["farm_index"]
+    return float(max(frequency / 2, 300) * (mod_frequency))
 
 
 def random_choices(data, weights, samples):
-    choices = random.choices(data, weights=weights, k=samples * 2)
+    normalised = numpy.asarray(weights)
+    normalised /= normalised.sum()
+    choices = numpy.random.choice(data, p=normalised, size=samples * 2)
     result = list()
     [result.append(x) for x in choices if x not in result]
     return result[:samples]
