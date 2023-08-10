@@ -67,7 +67,7 @@ def recommend(
     total_pp,
     top100=None,
     mods=None,
-    mods_exclude=["EZ", "FL"],
+    mods_exclude=None,
     pp_min=None,
     pp_max=None,
     quantity=1,

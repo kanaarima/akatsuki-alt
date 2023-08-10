@@ -443,7 +443,7 @@ async def recommend(message: discord.Message, args):
         f"data/trackerbot/{message.author.id}.json", ignore=True
     )
     mods = None
-    mods_exclude = None
+    mods_exclude = ["EZ", "FL", "NF"]
     pp_min = None
     pp_max = None
     quantity = 1
@@ -461,10 +461,10 @@ async def recommend(message: discord.Message, args):
                 pp_min = int(y[0])
                 pp_max = int(y[1])
             else:
-                pp_min = int(y[0]) - 50
-                pp_max = int(y[0])
+                pp_min = int(y[0]) - 25
+                pp_max = int(y[0]) + 25
         if x[0] == "quantity":
-            quantity = int(x[1])
+            quantity = min(int(x[1]), 25)
     tillerino_data = tillerino.get_data(data["userid"])
     recs = tillerino.recommend(
         tillerino_data["pp"],
