@@ -453,6 +453,9 @@ async def recommend(message: discord.Message, args):
             continue
         if x[0] == "mods":
             mods = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
+            for mod in mods:
+                if mod in mods_exclude:
+                    mods_exclude.remove(mod)
         elif x[0] == "mods_exclude":
             mods_exclude = [x[1][i : i + 2] for i in range(0, len(x[1]), 2)]
         elif x[0] == "pp":
