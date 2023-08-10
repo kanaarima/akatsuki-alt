@@ -101,6 +101,32 @@ def load_osualt_csv():
     save_beatmaps(beatmaps)
 
 
+def get_from_mapset(beatmap_set_id):
+    maps = list()
+    apiset = bancho.client.beatmapset(beatmapset_id=beatmap_set_id)
+    time.sleep(1)
+    for apimap in apiset.beatmaps:
+        attr = bancho.client.beatmap_attributes(beatmap_id=apimap.id).attributes
+        map = _blank_beatmap()
+        map["beatmap_set_id"] = apiset.id
+        map["beatmap_id"] = apimap.id
+        map["artist"] = apiset.artist
+        map["title"] = apiset.title
+        map["difficulty"] = apimap.version
+        map["stars"] = attr.star_rating
+        map["stars_speed"] = attr.aim_difficulty
+        map["stars_aim"] = attr.speed_difficulty
+        map["CS"] = apimap.cs
+        map["OD"] = attr.overall_difficulty
+        map["AR"] = attr.approach_rate
+        map["length"] = apimap.total_length
+        map["length_drain"] = apimap.drain
+        map["source"] = "osuapi"
+        maps.append(map)
+        time.sleep(1)
+    return maps
+
+
 def repair_maps(data):
     for map in data:
         repair = False
