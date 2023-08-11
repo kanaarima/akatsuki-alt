@@ -59,16 +59,11 @@ async def check_for_updates():
     beatmaps = list(tillerino.beatmaps.values())
 
     def get_beatmap_set(beatmap_set_id):
-        maps = list()
-        for beatmap in beatmaps:
-            if beatmap["beatmap_set_id"] == beatmap_set_id:
-                maps.append(beatmap)
-        if not len(maps) or maps[0]["source"].startswith("akat"):
-            maps = beatmapdb.get_from_mapset(beatmap_set_id)
-            if not maps:
-                return
-            beatmapdb.update_beatmaps(beatmaps, maps, overwrite=True)
-            beatmapdb.save_beatmaps(beatmaps)
+        maps = beatmapdb.get_from_mapset(beatmap_set_id)
+        if not maps:
+            return
+        beatmapdb.update_beatmaps(beatmaps, maps, overwrite=True)
+        beatmapdb.save_beatmaps(beatmaps)
         maps.sort(key=lambda x: x["stars"])
         return maps
 
