@@ -64,6 +64,7 @@ def convert_osualt_csv_str(values):
     map["stars"] = float(values[10])
     map["stars_aim"] = float(values[11])
     map["stars_speed"] = float(values[12])
+    map["BPM"] = int(values[7])
     map["CS"] = float(values[13])
     map["OD"] = float(values[14])
     map["AR"] = float(values[15])
@@ -102,29 +103,34 @@ def load_osualt_csv():
 
 
 def get_from_mapset(beatmap_set_id):
-    maps = list()
-    apiset = bancho.client.beatmapset(beatmapset_id=beatmap_set_id)
-    time.sleep(1)
-    for apimap in apiset.beatmaps:
-        attr = bancho.client.beatmap_attributes(beatmap_id=apimap.id).attributes
-        map = _blank_beatmap()
-        map["beatmap_set_id"] = apiset.id
-        map["beatmap_id"] = apimap.id
-        map["artist"] = apiset.artist
-        map["title"] = apiset.title
-        map["difficulty"] = apimap.version
-        map["stars"] = attr.star_rating
-        map["stars_speed"] = attr.aim_difficulty
-        map["stars_aim"] = attr.speed_difficulty
-        map["CS"] = apimap.cs
-        map["OD"] = attr.overall_difficulty
-        map["AR"] = attr.approach_rate
-        map["length"] = apimap.total_length
-        map["length_drain"] = apimap.drain
-        map["source"] = "osuapi"
-        maps.append(map)
+    try:
+        maps = list()
+        apiset = bancho.client.beatmapset(beatmapset_id=beatmap_set_id)
         time.sleep(1)
-    return maps
+        for apimap in apiset.beatmaps:
+            attr = bancho.client.beatmap_attributes(beatmap_id=apimap.id).attributes
+            map = _blank_beatmap()
+            map["beatmap_set_id"] = apiset.id
+            map["beatmap_id"] = apimap.id
+            map["artist"] = apiset.artist
+            map["title"] = apiset.title
+            map["difficulty"] = apimap.version
+            map["stars"] = attr.star_rating
+            map["stars_speed"] = attr.aim_difficulty
+            map["stars_aim"] = attr.speed_difficulty
+            map["BPM"] = apimap.bpm
+            map["CS"] = apimap.cs
+            map["OD"] = attr.overall_difficulty
+            map["AR"] = attr.approach_rate
+            map["length"] = apimap.total_length
+            map["length_drain"] = apimap.drain
+            map["source"] = "osuapi"
+            maps.append(map)
+            time.sleep(1)
+        return maps
+    except Exception as e:
+        print(e)
+        return None
 
 
 def repair_maps(data):
@@ -156,6 +162,7 @@ def repair_maps(data):
         map["stars"] = attr.star_rating
         map["stars_speed"] = attr.aim_difficulty
         map["stars_aim"] = attr.speed_difficulty
+        map["BPM"] = apimap.bpm
         map["CS"] = apimap.cs
         map["OD"] = attr.overall_difficulty
         map["AR"] = attr.approach_rate
