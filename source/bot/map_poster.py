@@ -31,7 +31,13 @@ async def create_post(mapset_id, maps, ranked):
         if added == 24:
             continue
         name = f"{map['stars']:0.2f}* {map['difficulty']}"
-        value = f"AR: {map['AR']:0.1f} CS: {map['CS']:0.1f} OD: {map['OD']:0.1f}\nLength: {timedelta(seconds=map['length'])}\nAim SR: {map['stars_aim']:0.2f}*\nSpeed SR: {map['stars_speed']:0.2f}*"
+        AR = f"{map['AR']:0.1f}" if "AR" in map else "0"
+        OD = f"{map['OD']:0.1f}" if "OD" in map else "0"
+        CS = f"{map['CS']:0.1f}" if "CS" in map else "0"
+        speed = f"{map['stars_speed']:0.2f}" if "stars_speed" in map else "0"
+        aim = f"{map['stars_aim']:0.2f}" if "stars_aim" in map else "0"
+        length = timedelta(seconds=map["length"]) if "length" in map else "0"
+        value = f"AR: {AR} CS: {CS} OD: {OD}\nLength: {length}\nAim SR: {aim}*\nSpeed SR: {speed}*"
         embed.add_field(name=name, value=value)
         added += 1
     embed.add_field(
