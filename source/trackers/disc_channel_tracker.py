@@ -19,8 +19,11 @@ def track_discord(secrets):
             continue
         os.makedirs("data/discord_tracker", exist_ok=True)
         os.system(f"touch data/discord_tracker/{yesterday}")
+        date = f"--after {yesterday}"
+        if not os.path.exists("data/discord_tracker/maps.json.gz"):
+            date = ""
         res = subprocess.Popen(
-            f"dotnet bin/DiscordChatExporter.Cli.dll export -t {secrets['discord_selfbot']} -c 597200076561055795 -f json -o data/discord_tracker/messages.json --after 2023-07-27",
+            f"dotnet bin/DiscordChatExporter.Cli.dll export -t {secrets['discord_selfbot']} -c 597200076561055795 -f json -o data/discord_tracker/messages.json {date}",
             shell=True,
         )
         res.wait()
@@ -46,4 +49,4 @@ def track_discord(secrets):
                     "ranked": ranked,
                 }
             )
-        utils.save_json_gzip(mapsets, text="data/discord_tracker/maps.json.gz")
+        utils.save_json_gzip(mapsets, "data/discord_tracker/maps.json.gz")
