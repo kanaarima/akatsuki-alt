@@ -22,6 +22,9 @@ def track_discord(secrets):
         date = f"--after {yesterday}"
         if not os.path.exists("data/discord_tracker/maps.json.gz"):
             date = ""
+            mapsets = list()
+        else:
+            mapsets = utils.load_json_gzip("data/discord_tracker/maps.json.gz")
         res = subprocess.Popen(
             f"dotnet bin/DiscordChatExporter.Cli.dll export -t {secrets['discord_selfbot']} -c 597200076561055795 -f json -o data/discord_tracker/messages.json {date}",
             shell=True,
@@ -29,7 +32,6 @@ def track_discord(secrets):
         res.wait()
         with open("data/discord_tracker/messages.json") as f:
             data = json.load(f)
-        mapsets = list()
         for message in data["messages"]:
             if "https://osu.ppy.sh" not in message["content"]:
                 continue

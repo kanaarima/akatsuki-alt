@@ -1,5 +1,7 @@
 import api.akatsuki as akatsuki
+import api.bancho as bancho
 import bot.commands as commands
+import bot.map_poster as poster
 import traceback
 import discord
 
@@ -15,6 +17,8 @@ bot_prefix = None
 @client.event
 async def on_ready():
     akatsuki.update_scorelb()
+    poster.client = client
+    poster.checker_task.start()
     print(f"We have logged in as {client.user}")
 
 
@@ -53,6 +57,8 @@ async def on_message(message: discord.Message):
 
 
 def akataltbot(secrets):
+    bancho.init(secrets)
+    poster.channel_id = secrets["poster_channel_id"]
     global bot_prefix
     bot_prefix = secrets["discord_command_prefix"]
     client.run(secrets["discord_token"])
