@@ -107,7 +107,6 @@ async def checker_task():
 
 @client.event
 async def on_ready():
-    client = client
     print(f"We have logged in as {client.user}")
 
 
