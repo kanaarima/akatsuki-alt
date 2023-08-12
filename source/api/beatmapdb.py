@@ -64,13 +64,13 @@ def convert_osualt_csv_str(values):
     map["stars"] = float(values[10])
     map["stars_aim"] = float(values[11])
     map["stars_speed"] = float(values[12])
-    map["BPM"] = int(values[7])
+    map["BPM"] = values[7]
     map["CS"] = float(values[13])
     map["OD"] = float(values[14])
     map["AR"] = float(values[15])
     map["HP"] = float(values[16])
-    map["length"] = float(values[22])
-    map["length_drain"] = float(values[17])
+    map["length"] = int(values[22])
+    map["length_drain"] = values[17]
     map["title"] = values[21]
     map["difficulty"] = values[23]
     return map

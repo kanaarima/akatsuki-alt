@@ -2,15 +2,17 @@ from datetime import timedelta
 from discord.ext import tasks
 import api.beatmapdb as beatmapdb
 import bot.tillerino as tillerino
+import api.bancho as bancho
 import api.utils as utils
 import discord
 import time
 import os
 
-client = None
+intents = discord.Intents.default()
+client = discord.Client(intents=intents)
 ranked_tag = None
 loved_tag = None
-channel_id = None
+channel = None
 
 
 async def create_post(mapset_id, maps, ranked):
@@ -18,7 +20,6 @@ async def create_post(mapset_id, maps, ranked):
     embed.set_image(
         url=f"https://assets.ppy.sh/beatmaps/{mapset_id}/covers/cover@2x.jpg"
     )
-    client.get_channel(channel_id)
     title = f"{maps[0]['artist']} - {maps[0]['title']} "
     if len(title) > 84:
         title = title[:84] + "... "
@@ -48,7 +49,7 @@ async def create_post(mapset_id, maps, ranked):
         value=f"[Chimu](https://api.chimu.moe/v1/download/{mapset_id}?n=1)\n[Bancho](https://osu.ppy.sh/beatmapsets/{mapset_id})\n[Osu! Direct](https://kanaarima.github.io/osu/osudl-set.html?beatmap={mapset_id})",
     )
     title += f"({min_star:0.2f}-{max_star:0.2f}*)"
-    thread, msg = await client.get_channel(channel_id).create_thread(
+    thread, msg = await channel.create_thread(
         name=title,
         embed=embed,
         applied_tags=[ranked_tag if ranked else loved_tag],
@@ -82,20 +83,36 @@ async def check_for_updates():
         if not maps:
             already_sent[mapset["mapset_id"]] = {"result": "failed"}
             continue
-        id = await create_post(mapset["mapset_id"], maps, mapset["ranked"])
-        already_sent[mapset["mapset_id"]] = {"result": "success", "msg_id": id}
+        try:
+            id = await create_post(mapset["mapset_id"], maps, mapset["ranked"])
+            already_sent[mapset["mapset_id"]] = {"result": "success", "msg_id": id}
+        except:
+            already_sent[mapset["mapset_id"]] = {"result": "failed"}
+        utils.save_json_gzip(already_sent, "data/discord_tracker/sent.json.gz")
         time.sleep(3)
-    utils.save_json_gzip(already_sent, "data/discord_tracker/sent.json.gz")
 
 
 @tasks.loop(minutes=30)
 async def checker_task():
     global ranked_tag, loved_tag
     if not ranked_tag:
-        for tag in client.get_channel(channel_id).available_tags:
+        for tag in channel.available_tags:
             if tag.name.lower() == "ranked":
                 ranked_tag = tag
             elif tag.name.lower() == "loved":
                 loved_tag = tag
 
     await check_for_updates()
+
+
+@client.event
+async def on_ready():
+    client = client
+    print(f"We have logged in as {client.user}")
+
+
+def mapposterbot(secrets):
+    global channel
+    bancho.init(secrets)
+    channel = client.get_channel(secrets["poster_channel_id"])
+    client.run(secrets["discord_token"])

@@ -8,6 +8,7 @@ import trackers.disc_channel_tracker as disc_channel_tracker
 
 import api.flask2discord as flask2discord
 import bot.discord_bot as discord_bot
+import bot.map_poster as map_poster
 
 # from threading import Thread
 import signal
@@ -25,6 +26,7 @@ function_list = (
     maps_lb_tracker.track_maps,
     score_1s_tracker.score_1s_tracker,
     disc_channel_tracker.track_discord,
+    map_poster.mapposterbot,
 )
 function_class = {
     clan_lb_tracker.track_clan_leaderboards: clan_lb_tracker,
@@ -35,6 +37,7 @@ function_class = {
     maps_lb_tracker.track_maps: maps_lb_tracker,
     score_1s_tracker.score_1s_tracker: score_1s_tracker,
     disc_channel_tracker.track_discord: disc_channel_tracker,
+    map_poster.mapposterbot: map_poster,
 }  # No reflections
 
 
