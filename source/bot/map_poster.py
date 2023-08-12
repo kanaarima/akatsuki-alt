@@ -108,11 +108,11 @@ async def checker_task():
 @client.event
 async def on_ready():
     checker_task.start()
+    channel = client.get_channel(secrets["poster_channel_id"])
     print(f"We have logged in as {client.user}")
 
 
 def mapposterbot(secrets):
     global channel
     bancho.init(secrets)
-    channel = client.get_channel(secrets["poster_channel_id"])
     client.run(secrets["discord_token"])
