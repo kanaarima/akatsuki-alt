@@ -32,6 +32,7 @@ def _stats(apiuser):
     stats["accuracy"] = apiuser["chosen_mode"]["accuracy"]
     stats["pp_rank"] = -1
     stats["score_rank"] = -1
+    stats["total_score_rank"] = -1
     return stats
 
 
@@ -188,6 +189,7 @@ def user_lb_stats_tracker(secrets):
                             rank += 1
 
             set_rank("ranked_score", "score_rank", "overall")
+            set_rank("total_score", "total_score_rank")
             set_rank("performance_points", "pp_rank", "overall")
             utils.save_json_gzip(
                 sorted(list(users.values()), key=lambda x: x["id"]),
@@ -195,6 +197,7 @@ def user_lb_stats_tracker(secrets):
             )
             pp = list()
             score = list()
+            total_rx_score = list()
             rank = 1
             for user in clan_lb_tracker.get_leaderboard(
                 users.values(), "overall", "pp_rank"
@@ -211,6 +214,20 @@ def user_lb_stats_tracker(secrets):
                     f"#{rank} {user['username']}: {user['statistics']['overall']['ranked_score']} ranked score"
                 )
                 rank += 1
+            rank = 1
+            for user in clan_lb_tracker.get_leaderboard(
+                users.values(), "std_rx", "total_score_rank"
+            ):
+                score.append(
+                    f"#{rank} {user['username']}: {user['statistics']['overall']['total_score']} total score"
+                )
+                rank += 1
+            utils.send_string_list(
+                f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message',
+                secrets["user_rx_total_score"],
+                f"{yesterday} changes",
+                total_rx_score,
+            )
             utils.send_string_list(
                 f'http://{secrets["flask2discord_host"]}:{secrets["flask2discord_port"]}/send_message',
                 secrets["user_overall_score"],
