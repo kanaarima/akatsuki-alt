@@ -218,7 +218,7 @@ def user_lb_stats_tracker(secrets):
             for user in clan_lb_tracker.get_leaderboard(
                 users.values(), "std_rx", "total_score_rank"
             ):
-                score.append(
+                total_rx_score.append(
                     f"#{rank} {user['username']}: {user['statistics']['overall']['total_score']} total score"
                 )
                 rank += 1
